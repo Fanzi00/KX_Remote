@@ -1,0 +1,103 @@
+---
+Language: Cpp
+#圆括号之后,多行内容,进行对齐
+AlignAfterOpenBracket: Align
+
+#连续赋值时，对齐所有等号
+AlignConsecutiveAssignments: false
+#连续声明时，对齐所有声明的变量名
+AlignConsecutiveDeclarations: true
+
+#连续宏定义时，对齐所有定义值
+AlignConsecutiveMacros: AcrossEmptyLinesAndComments
+
+#AlignOperands Align将对齐分割到多行上的单个表达式的操作数
+AlignOperands: Align
+
+#对齐连续的尾随的注释
+AlignTrailingComments: true
+
+#允许将一个函数声明的所有参数移到下一行.
+AllowAllParametersOfDeclarationOnNextLine: false
+
+#将简单的语句块放到一个单行
+AllowShortBlocksOnASingleLine: true
+
+#if (a) return;放单行 属性：Never、WithoutElse没有else的可以放单行、OnlyFirstIf只有第一个if放单行、AllIfsAndElse总是把简短的if, else if和else语句放在同一行。
+AllowShortIfStatementsOnASingleLine: Never
+
+#BinPackArguments：如果为false，函数调用的参数要么全部在同一行，要么各有一行。
+BinPackArguments: false
+
+#BinPackParameters：如果为false，函数声明或函数定义的参数将全部在同一行或各有一行。
+BinPackParameters: false
+BreakBeforeBraces: Custom
+
+# 控制单独的大括号换行事件，只有当BreakBeforeBraces设置为Custom时才有效
+BraceWrapping:
+  #使控制语句(if/for/while/switch/..)换行。
+  AfterControlStatement: true
+  #使枚举定义换行。
+  AfterEnum: false
+  #使函数定义换行。
+  AfterFunction: true
+  #使结构定义换行。
+  AfterStruct: false
+  #使共同体定义换行。
+  AfterUnion: false
+  #在else之前换行。
+  BeforeElse: true
+  #换行大括号缩进。
+  IndentBraces: false
+  #空函数是否可以放在单行：flase允许 true不允许
+  SplitEmptyFunction: true
+  #空类，结构或联合主体是否可以放在单行：flase允许 true不允许
+  SplitEmptyRecord: true
+  #空namespace是否可以放在单行：flase允许 true不允许
+  SplitEmptyNamespace: true
+
+SpaceBeforeParens: Custom
+#控制圆括号前的单独空格，只有当SpaceBeforeParens设置为Custom时才有效
+SpaceBeforeParensOptions:
+  #在控制语句关键字(for/if/while…)和开括号之间放置空格
+  AfterControlStatements: false
+  #在函数声明名称和圆括号之间不允许使用空格
+  AfterFunctionDeclarationName: false
+
+#指针对齐：左
+PointerAlignment: Left
+
+# 三元运算符将被放置在换行后
+BreakBeforeTernaryOperators: true
+
+#每行字符的限制，0表示没有限制
+ColumnLimit: 0
+
+#缩进空格宽度：4
+IndentWidth: 4
+TabWidth: 4
+
+#保留在赋值操作符之前的空格
+SpaceBeforeAssignmentOperators: true
+
+#不要排序include的头文件
+SortIncludes: Never
+
+#允许重新排版注释
+ReflowComments: true
+
+#尾行注释前的空格数
+SpacesBeforeTrailingComments: 1
+
+#连续空行的最大数量
+MaxEmptyLinesToKeep: 1
+
+#使用tab字符: Never从不使用, ForIndentation仅在缩进时使用制表符， ForContinuationAndIndentation, Always
+UseTab: ForContinuationAndIndentation
+
+#SpacesInParentheses如果为真（true）, 将会在“(”之后和“)”之前插入空格。
+SpacesInParentheses: false
+
+#SpacesInSquareBrackets如果为真（true）,将会在“[”之后和“]”之前插入空格。
+SpacesInSquareBrackets: false
+
