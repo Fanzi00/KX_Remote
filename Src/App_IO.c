@@ -426,7 +426,7 @@ void Key_MainZZT(void)
 			if (ceSH_BYTE==0   )
 			{	
 		 	 	gLcdFresh = 3;
-			   gp_lcdtask = Disp_GJ;
+			//    gp_lcdtask = Disp_GJ;
 				
 			}
 			else
@@ -443,7 +443,7 @@ void Key_MainZZT(void)
 			if (X_TEST==0   )
 			{	
 		 	 	gLcdFresh = 3;
-			   gp_lcdtask = Disp_GJ;
+			//    gp_lcdtask = Disp_GJ;
 				
 			}
 			else

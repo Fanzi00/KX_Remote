@@ -20,7 +20,7 @@ CANOPEN 协议相关处理函数
 #include "canopen.h"
 //#include "..\can\LPC1700can.h"
 
-
+KX119_Recv_t KX_119_recv_press = {0};
 const unsigned char cReadErr[9]="CfgRdErr";
 
 //extern MessageDetail  MessageDetailT;                                          /* 定义发送帧                   */
@@ -749,8 +749,32 @@ void app10ms(void)
 	   KX_127_63(VKC_Send,i) ;
 
 	}		
-	
-			    
+	// 解析接收发送的数据，yk变量属于调试变量
+	uint16_t index = gRunInfo.vRcvWL[0] | (gRunInfo.vRcvWL[1] << 8);
+	switch(index)
+	{
+		case 0:
+		{
+			KX_119_recv_press.Press_Boom = gRunInfo.vRcvWL[2] | (gRunInfo.vRcvWL[3] << 8);
+			KX_119_recv_press.Press_Rotate = gRunInfo.vRcvWL[4] | (gRunInfo.vRcvWL[5] << 8);
+			KX_119_recv_press.Press_Impact = gRunInfo.vRcvWL[6] | (gRunInfo.vRcvWL[7] << 8);
+			break;
+		}
+		case 1:
+		{
+			KX_119_recv_press.Press_Push = gRunInfo.vRcvWL[2] | (gRunInfo.vRcvWL[3] << 8);
+			KX_119_recv_press.Press_Buffer = gRunInfo.vRcvWL[4] | (gRunInfo.vRcvWL[5] << 8);
+			KX_119_recv_press.Press_Lube = gRunInfo.vRcvWL[6] | (gRunInfo.vRcvWL[7] << 8);
+			break;
+		}
+		case 2:
+		{
+			KX_119_recv_press.Press_Water = gRunInfo.vRcvWL[2] | (gRunInfo.vRcvWL[3] << 8);
+			KX_119_recv_press.Press_Grout = gRunInfo.vRcvWL[4] | (gRunInfo.vRcvWL[5] << 8);
+			break;
+		}
+	}
+	#if 0
 					remote_18c.L1           =	 gRunInfo.vRcvWL[0] + yk1 ; 
 					remote_18c.L2           =	 gRunInfo.vRcvWL[1] + yk2 ; 
 					remote_18c.L3           =	 gRunInfo.vRcvWL[2] + yk3 ; 
@@ -768,85 +792,84 @@ void app10ms(void)
 					remote_18c.message_6	  =	 _BitV(remote_18c.L7, 5) ;
 					remote_18c.message_7	  =	 _BitV(remote_18c.L7, 6) ;
 					remote_18c.message_8	  =	 _BitV(remote_18c.L7, 7) ;
-					       
+	#endif		       
 
 
 } 
 void Can_Send_Prog(void)
-{		    
-	T0_50ms++ ;	  T0_60ms++ ;
-	if(T0_50ms >5)
-	{	
-	 				
-		CAN_SBuf1[0] = Y_Send[0];	 
-		CAN_SBuf1[1] = Y_Send[1] ;	 
-		CAN_SBuf1[2] = Y_Send[2];
-		CAN_SBuf1[3] = Y_Send[3] ;
-		CAN_SBuf1[4] = Y_Send[4];  
-		CAN_SBuf1[5] = Y_Send[5]  ;     		  
-		 CAN_SBuf1[6] = ADCRst[1]; // 2下
-		 CAN_SBuf1[7] = ADCRst[1]>>8;
-	   	CAN_Send(0, 0x188, CAN_SBuf1);		
-				 			    							
-		CAN_SBuf1[0] =dead_zone;	 
-		CAN_SBuf1[1] = ADCRst[0] >>8;	 
-		CAN_SBuf1[2] = ADCRst[ 1];
-		CAN_SBuf1[3] = ADCRst[ 1] >>8;
-		CAN_SBuf1[4] = ADCRst[2];  
-		CAN_SBuf1[5] = ADCRst[2] >>8 ;  
-		CAN_SBuf1[6] = ADCRst[3]   ; 
-		CAN_SBuf1[7] = ADCRst[3] >>8 ; 	
-		 
-	   	CAN_Send(0, 0x189, CAN_SBuf1);		
-		   
-		T0_50ms =0 ;
-		 		
-	}	
-	if (T0_60ms >10)
-	{ 
-		CAN_SBuf1[0] = gDIBitV;
-		CAN_SBuf1[1] = gDIBitV>>8;
-		CAN_SBuf1[2] = gDIBitV>>16;
-		CAN_SBuf1[3] = gDIBitV>>24;
-		CAN_SBuf1[4] =  ADCRst[4];
-		CAN_SBuf1[5] =  ADCRst[4]>>8;	// 
-		CAN_SBuf1[6] =   ADCRst[5] ;
-		CAN_SBuf1[7] =   ADCRst[5]>>8 ;
-	   	CAN_Send(0, 0x18A, CAN_SBuf1);		//
-													  
-   				
-		CAN_SBuf1[0] = ADCRst[6];	 
-		CAN_SBuf1[1] = ADCRst[6] >>8;	 
-		CAN_SBuf1[2] = ADCRst[ 7];
-		CAN_SBuf1[3] = ADCRst[ 7] >>8;
-		CAN_SBuf1[4] = ADCRst[8];  
-		CAN_SBuf1[5] = ADCRst[8] >>8 ;  
-		CAN_SBuf1[6] = ADCRst[9]   ; 
-		CAN_SBuf1[7] = ADCRst[9] >>8 ; 													 
-	   	CAN_Send(0, 0x18B, CAN_SBuf1);		//
-	 
-		CAN_SBuf1[0] = ADCRst[10];	 
-		CAN_SBuf1[1] = ADCRst[10] >>8;	 
-		CAN_SBuf1[2] = ADCRst[11];
-		CAN_SBuf1[3] = ADCRst[11] >>8;
-		CAN_SBuf1[4] = ADCRst[12];  
-		CAN_SBuf1[5] = ADCRst[12] >>8 ;  
-		CAN_SBuf1[6] = ADCRst[13]   ; 
-		CAN_SBuf1[7] = ADCRst[13] >>8 ; 													 
-	   	CAN_Send(0, 0x18C, CAN_SBuf1);		//
-		CAN_SBuf1[0] = ADCRst[14];	 
-		CAN_SBuf1[1] = ADCRst[14] >>8;	 
-		CAN_SBuf1[2] = ADCRst[15];
-		CAN_SBuf1[3] = ADCRst[15] >>8;
-		CAN_SBuf1[4] = ADCRst[16];  
-		CAN_SBuf1[5] = ADCRst[16] >>8 ;  
-		CAN_SBuf1[6] = ADCRst[13]   ; 
-		CAN_SBuf1[7] = ADCRst[13] >>8 ; 													 
-	   	CAN_Send(0, 0x18D, CAN_SBuf1);		//
-	 
-		  
-		T0_60ms =0 ;
+{
+	T0_50ms++;
+	T0_60ms++;
+	if(T0_50ms > 5)
+	{
 
+		CAN_SBuf1[0] = Y_Send[0];
+		CAN_SBuf1[1] = Y_Send[1];
+		CAN_SBuf1[2] = Y_Send[2];
+		CAN_SBuf1[3] = Y_Send[3];
+		CAN_SBuf1[4] = Y_Send[4];
+		CAN_SBuf1[5] = Y_Send[5];
+		CAN_SBuf1[6] = Y_Send[6];
+		CAN_SBuf1[7] = Y_Send[7];
+		// CAN_SBuf1[6] = ADCRst[1]; // 2下
+		// CAN_SBuf1[7] = ADCRst[1] >> 8;
+		CAN_Send(0, 0x188, CAN_SBuf1);
+
+		CAN_SBuf1[0] = ADCRst[0];
+		CAN_SBuf1[1] = ADCRst[0] >> 8;
+		CAN_SBuf1[2] = ADCRst[1];
+		CAN_SBuf1[3] = ADCRst[1] >> 8;
+		CAN_SBuf1[4] = ADCRst[2];
+		CAN_SBuf1[5] = ADCRst[2] >> 8;
+		CAN_SBuf1[6] = ADCRst[3];
+		CAN_SBuf1[7] = ADCRst[3] >> 8;
+
+		CAN_Send(0, 0x189, CAN_SBuf1);
+
+		T0_50ms = 0;
+	}
+	if(T0_60ms > 10)
+	{
+		CAN_SBuf1[0] = gDIBitV;
+		CAN_SBuf1[1] = gDIBitV >> 8;
+		CAN_SBuf1[2] = gDIBitV >> 16;
+		CAN_SBuf1[3] = gDIBitV >> 24;
+		CAN_SBuf1[4] = ADCRst[4];
+		CAN_SBuf1[5] = ADCRst[4] >> 8; //
+		CAN_SBuf1[6] = ADCRst[5];
+		CAN_SBuf1[7] = ADCRst[5] >> 8;
+		CAN_Send(0, 0x18A, CAN_SBuf1); //
+
+		CAN_SBuf1[0] = ADCRst[6];
+		CAN_SBuf1[1] = ADCRst[6] >> 8;
+		CAN_SBuf1[2] = ADCRst[7];
+		CAN_SBuf1[3] = ADCRst[7] >> 8;
+		CAN_SBuf1[4] = ADCRst[8];
+		CAN_SBuf1[5] = ADCRst[8] >> 8;
+		CAN_SBuf1[6] = ADCRst[9];
+		CAN_SBuf1[7] = ADCRst[9] >> 8;
+		CAN_Send(0, 0x18B, CAN_SBuf1); //
+
+		CAN_SBuf1[0] = ADCRst[10];
+		CAN_SBuf1[1] = ADCRst[10] >> 8;
+		CAN_SBuf1[2] = ADCRst[11];
+		CAN_SBuf1[3] = ADCRst[11] >> 8;
+		CAN_SBuf1[4] = ADCRst[12];
+		CAN_SBuf1[5] = ADCRst[12] >> 8;
+		CAN_SBuf1[6] = ADCRst[13];
+		CAN_SBuf1[7] = ADCRst[13] >> 8;
+		CAN_Send(0, 0x18C, CAN_SBuf1); //
+		CAN_SBuf1[0] = ADCRst[14];
+		CAN_SBuf1[1] = ADCRst[14] >> 8;
+		CAN_SBuf1[2] = ADCRst[15];
+		CAN_SBuf1[3] = ADCRst[15] >> 8;
+		CAN_SBuf1[4] = ADCRst[16];
+		CAN_SBuf1[5] = ADCRst[16] >> 8;
+		CAN_SBuf1[6] = ADCRst[13];
+		CAN_SBuf1[7] = ADCRst[13] >> 8;
+		CAN_Send(0, 0x18D, CAN_SBuf1); //
+
+		T0_60ms = 0;
 	}
 }
  			 
@@ -932,7 +955,7 @@ unsigned char CAN1_Get_Data(unsigned int vID)
 *			
 * 出口参数：
 ******************************************************************/
-
+// 将手柄的输出范围从0~255映射到0~126，并装入GL_Send
 void  KX_127_63(unsigned char Y_Send_buf[] ,unsigned char vNO   )	// 0 1 
 {
 						    
@@ -966,7 +989,7 @@ void  KX_127_63(unsigned char Y_Send_buf[] ,unsigned char vNO   )	// 0 1
 *			
 * 出口参数：
 ******************************************************************/
-
+// 锁定手柄只能输出上下移动量或者左右移动量
 void  KX_Send_joylogic(unsigned char Y_Send_buf[] ,unsigned char vNO   )	// 0 1 
 {
 
@@ -975,11 +998,11 @@ void  KX_Send_joylogic(unsigned char Y_Send_buf[] ,unsigned char vNO   )	// 0 1
 	for(i=0; i<4; i++)
 	{
 	   vc = 2*i ;
-	   if (abs( Y_Send_buf[vc+1] - _ARM_MIDVCan ) > 0  )
+	   if (abs( Y_Send_buf[vc+1] - _ARM_MIDVCan ) > 0  ) // 手柄有左右移动
 	   {    
 		   q_y_link =  abs( Y_Send_buf[vc] - _ARM_MIDVCan ) /  abs( Y_Send_buf[vc+1] - _ARM_MIDVCan )  ;
 		 
-			if (q_y_link >1.0)
+			if (q_y_link >1.0)// 手柄的上下的移动量大于左右的移动量时
 				NO_Result =vc ;
 			else if	(q_y_link <1.0)
 				NO_Result = vc+1 ;
@@ -988,7 +1011,7 @@ void  KX_Send_joylogic(unsigned char Y_Send_buf[] ,unsigned char vNO   )	// 0 1
 		}
 		else
 		{  
-			if ( abs( Y_Send_buf[vc] - _ARM_MIDVCan ) >0 )
+			if ( abs( Y_Send_buf[vc] - _ARM_MIDVCan ) >0 )// 手柄有上下移动
 
 				 NO_Result = vc ;
 			else

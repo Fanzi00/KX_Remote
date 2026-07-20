@@ -25,7 +25,7 @@ unsigned int  gLCDBC = 0;		// 显示的通用背景色
 //unsigned char gTstStr[30];
 //unsigned long  gTstRD = 0;
 
-unsigned char  gID = ID_DEFAULT;
+unsigned char  gID = ID_DEFAULT;// 0x58
 
 	
 //void BD_Patam_Init(void);
@@ -213,7 +213,7 @@ int main( void )
 			Arm_Conv();									// 20180506  lsg   5V  
 	}
 	LCD_SET_BL(gLCDBKLight);
-	Disp_PicX(1);
+	Disp_PicX(1);// 显示Logo
 	for(i=0; i<20; i++)
 	{
 		delay_ms(100);
