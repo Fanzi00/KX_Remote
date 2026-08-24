@@ -755,22 +755,23 @@ void app10ms(void)
 	{
 		case 0:
 		{
-			KX_119_recv_press.Press_Boom = gRunInfo.vRcvWL[2] | (gRunInfo.vRcvWL[3] << 8);
-			KX_119_recv_press.Press_Rotate = gRunInfo.vRcvWL[4] | (gRunInfo.vRcvWL[5] << 8);
-			KX_119_recv_press.Press_Impact = gRunInfo.vRcvWL[6] | (gRunInfo.vRcvWL[7] << 8);
+			KX_119_recv_press.Data0 = gRunInfo.vRcvWL[2] | (gRunInfo.vRcvWL[3] << 8);
+			KX_119_recv_press.Data1 = gRunInfo.vRcvWL[4] | (gRunInfo.vRcvWL[5] << 8);
+			KX_119_recv_press.Data2 = gRunInfo.vRcvWL[6] | (gRunInfo.vRcvWL[7] << 8);
 			break;
 		}
 		case 1:
 		{
-			KX_119_recv_press.Press_Push = gRunInfo.vRcvWL[2] | (gRunInfo.vRcvWL[3] << 8);
-			KX_119_recv_press.Press_Buffer = gRunInfo.vRcvWL[4] | (gRunInfo.vRcvWL[5] << 8);
-			KX_119_recv_press.Press_Lube = gRunInfo.vRcvWL[6] | (gRunInfo.vRcvWL[7] << 8);
+			KX_119_recv_press.Data3 = gRunInfo.vRcvWL[2];
+			KX_119_recv_press.Data4 = gRunInfo.vRcvWL[3];
+			KX_119_recv_press.Data5 = gRunInfo.vRcvWL[4] | gRunInfo.vRcvWL[5] << 8;
+			KX_119_recv_press.Data6 = gRunInfo.vRcvWL[6] | gRunInfo.vRcvWL[7] << 8;
 			break;
 		}
 		case 2:
 		{
-			KX_119_recv_press.Press_Water = gRunInfo.vRcvWL[2] | (gRunInfo.vRcvWL[3] << 8);
-			KX_119_recv_press.Press_Grout = gRunInfo.vRcvWL[4] | (gRunInfo.vRcvWL[5] << 8);
+			// KX_119_recv_press.Data6 = gRunInfo.vRcvWL[2] | (gRunInfo.vRcvWL[3] << 8);
+			// KX_119_recv_press.Data7 = gRunInfo.vRcvWL[4] | (gRunInfo.vRcvWL[5] << 8);
 			break;
 		}
 	}

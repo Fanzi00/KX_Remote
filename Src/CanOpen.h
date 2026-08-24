@@ -70,14 +70,14 @@ comments:
 #define  CANOPEN_MOD_SAVE_OK	0xA1		// 保存配置
 
 typedef struct KX119_Recv{
-	uint16_t Press_Boom;   // 臂架压力
-	uint16_t Press_Rotate; // 回转压力
-	uint16_t Press_Impact; // 冲击压力
-	uint16_t Press_Push;   // 推进压力
-	uint16_t Press_Buffer; // 缓冲压力
-	uint16_t Press_Lube;   // 润滑压力
-	uint16_t Press_Water;  // 水路压力
-	uint16_t Press_Grout;  // 注浆压力
+	uint16_t Data0;
+	uint16_t Data1;
+	uint16_t Data2;
+	uint16_t Data3;
+	uint16_t Data4;
+	uint16_t Data5;
+	uint16_t Data6;
+	uint16_t Data7;
 }KX119_Recv_t;
 extern KX119_Recv_t KX_119_recv_press;
 

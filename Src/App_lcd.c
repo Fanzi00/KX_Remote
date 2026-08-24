@@ -229,6 +229,15 @@ void LiGong_mode()
 		LCD_Disp_Txt(FONT_32, Vermid-208/2+32*4+16, Hormid-32/2,"中臂");
 
 }
+uint8_t showWarn(uint32_t t)
+{
+	if(t != 0)
+	{
+		return 1;
+	}
+	return 0;
+}
+
 // 凿岩模式界面
 void Drilling_mode()
 {
@@ -240,48 +249,59 @@ void Drilling_mode()
 
 	LCD_Set_Color(COLOR_WHITE_, -1);
 	// 模式显示
-	LCD_Disp_Txt(FONT_16, Vermid-112/2, 5,"凿岩模式(中臂)");//16*6+8*2=112
+	// LCD_Disp_Txt(FONT_16, Vermid-112/2, 5,"凿岩模式(中臂)");//16*6+8*2=112
 	// 第一列
-	LCD_Disp_Txt(FONT_16, margL, 30+high*0,"臂架压力:");//16*4+8+8*5+8*3=136,每行设置20
+	LCD_Disp_Txt(FONT_16, margL, 30+high*0,"回转压力:");//16*4+8+8*5+8*3=136,每行设置20
 	LCD_Disp_Txt(FONT_16, margL, 30+high*1,"冲击压力:");
-	LCD_Disp_Txt(FONT_16, margL, 30+high*2,"缓冲压力:");
-	LCD_Disp_Txt(FONT_16, margL, 30+high*3,"水路压力:");
-	LCD_Disp_Txt(FONT_16, margL, 30+high*4,"泵站:");
-	LCD_Disp_Txt(FONT_16, margL, 30+high*5,"水阀:");
-
-	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, 30+high*0,"bar");
-	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, 30+high*1,"bar");
-	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, 30+high*2,"bar");
-	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, 30+high*3,"bar");
+	LCD_Disp_Txt(FONT_16, margL, 30+high*2,"推进压力:");
+	LCD_Disp_Txt(FONT_16, margL, 30+high*3,"冲洗压力:");
+	LCD_Disp_Txt(FONT_16, margL, 30+high*4,"润滑气压:");
+	uint32_t mask = KX_119_recv_press.Data5 | KX_119_recv_press.Data6 << 16;
+	if(showWarn(mask))
+	{
+		LCD_Set_Color(COLOR_RED_, -1);
+		LCD_Disp_Txt(FONT_16, margL, 30+high*5,"自检异常");
+	}
+	else
+	{
+		LCD_Disp_Txt(FONT_16, margL, 30+high*5,"         ");
+	}
+	LCD_Set_Color(COLOR_WHITE_, -1);
+	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, 30+high*0,"x0.1bar");
+	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, 30+high*1,"x0.1bar");
+	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, 30+high*2,"x0.1bar");
+	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, 30+high*3,"x0.1bar");
+	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, 30+high*4,"x0.1bar");
 	
 	// 第二列
-	LCD_Disp_Txt(FONT_16, Vermid*2-margR-136, 30+high*0,"回转压力:");
-	LCD_Disp_Txt(FONT_16, Vermid*2-margR-136, 30+high*1,"推进压力:");
-	LCD_Disp_Txt(FONT_16, Vermid*2-margR-136, 30+high*2,"润滑压力:");
-	LCD_Disp_Txt(FONT_16, Vermid*2-margR-136, 30+high*3,"注浆压力:");
-	LCD_Disp_Txt(FONT_16, Vermid*2-margR-136, 30+high*4,"空压机:");
-	LCD_Disp_Txt(FONT_16, Vermid*2-margR-136, 30+high*5,"水泵:");
+	// LCD_Disp_Txt(FONT_16, Vermid*2-margR-136, 30+high*0,"润滑气压:");
+	// LCD_Disp_Txt(FONT_16, Vermid*2-margR-136, 30+high*1,"推进压力:");
+	// LCD_Disp_Txt(FONT_16, Vermid*2-margR-136, 30+high*2,"润滑压力:");
+	// LCD_Disp_Txt(FONT_16, Vermid*2-margR-136, 30+high*3,"注浆压力:");
+	// LCD_Disp_Txt(FONT_16, Vermid*2-margR-136, 30+high*4,"空压机:");
+	// LCD_Disp_Txt(FONT_16, Vermid*2-margR-136, 30+high*5,"水泵:");
 
-	LCD_Disp_Txt(FONT_16, Vermid*2-margR-136+16*4+8*6, 30+high*0,"bar");
-	LCD_Disp_Txt(FONT_16, Vermid*2-margR-136+16*4+8*6, 30+high*1,"bar");
-	LCD_Disp_Txt(FONT_16, Vermid*2-margR-136+16*4+8*6, 30+high*2,"bar");
-	LCD_Disp_Txt(FONT_16, Vermid*2-margR-136+16*4+8*6, 30+high*3,"bar");
+	// LCD_Disp_Txt(FONT_16, Vermid*2-margR-136+16*4+8*6, 30+high*0,"bar");
+	// LCD_Disp_Txt(FONT_16, Vermid*2-margR-136+16*4+8*6, 30+high*1,"bar");
+	// LCD_Disp_Txt(FONT_16, Vermid*2-margR-136+16*4+8*6, 30+high*2,"bar");
+	// LCD_Disp_Txt(FONT_16, Vermid*2-margR-136+16*4+8*6, 30+high*3,"bar");
 	// 显示数据数字
 	LCD_Set_Color(COLOR_YELLW_, -1);
 	// 第一列
-	LCD_Disp_Intx(FONT_16, margL+16*4+8, 30+high*0, KX_119_recv_press.Press_Boom, 5);
-	LCD_Disp_Intx(FONT_16, margL+16*4+8, 30+high*1, KX_119_recv_press.Press_Impact, 5);
-	LCD_Disp_Intx(FONT_16, margL+16*4+8, 30+high*2, KX_119_recv_press.Press_Buffer, 5);
-	LCD_Disp_Intx(FONT_16, margL+16*4+8, 30+high*3, KX_119_recv_press.Press_Water, 5);
-	if(_BitV(gDIBitV, 17)) LCD_Disp_Txt(FONT_16, margL+16*2+8, 30+high*4, "开启"); else LCD_Disp_Txt(FONT_16, margL+16*2+8, 30+high*4, "关闭"); 
-	if(_BitV(gDIBitV, 18)) LCD_Disp_Txt(FONT_16, margL+16*2+8, 30+high*5, "开启"); else LCD_Disp_Txt(FONT_16, margL+16*2+8, 30+high*5, "关闭"); 
+	LCD_Disp_Intx(FONT_16, margL+16*4+8, 30+high*0, KX_119_recv_press.Data0, 5);
+	LCD_Disp_Intx(FONT_16, margL+16*4+8, 30+high*1, KX_119_recv_press.Data1, 5);
+	LCD_Disp_Intx(FONT_16, margL+16*4+8, 30+high*2, KX_119_recv_press.Data2, 5);
+	LCD_Disp_Intx(FONT_16, margL+16*4+8, 30+high*3, KX_119_recv_press.Data3, 5);
+	LCD_Disp_Intx(FONT_16, margL+16*4+8, 30+high*4, KX_119_recv_press.Data4, 5);
+	// if(_BitV(gDIBitV, 17)) LCD_Disp_Txt(FONT_16, margL+16*2+8, 30+high*4, "开启"); else LCD_Disp_Txt(FONT_16, margL+16*2+8, 30+high*4, "关闭"); 
+	// if(_BitV(gDIBitV, 18)) LCD_Disp_Txt(FONT_16, margL+16*2+8, 30+high*5, "开启"); else LCD_Disp_Txt(FONT_16, margL+16*2+8, 30+high*5, "关闭"); 
 	// 第二列
-	LCD_Disp_Intx(FONT_16, (Vermid*2-margR-136)+16*4+8, 30+high*0, KX_119_recv_press.Press_Rotate, 5);
-	LCD_Disp_Intx(FONT_16, (Vermid*2-margR-136)+16*4+8, 30+high*1, KX_119_recv_press.Press_Push, 5);
-	LCD_Disp_Intx(FONT_16, (Vermid*2-margR-136)+16*4+8, 30+high*2, KX_119_recv_press.Press_Lube, 5);
-	LCD_Disp_Intx(FONT_16, (Vermid*2-margR-136)+16*4+8, 30+high*3, KX_119_recv_press.Press_Grout, 5);
-	if(_BitV(gDIBitV, 21)) LCD_Disp_Txt(FONT_16, Vermid*2-margR-136+16*3+8, 30+high*4, "开启"); else LCD_Disp_Txt(FONT_16, Vermid*2-margR-136+16*3+8, 30+high*4, "关闭"); 
-	if(_BitV(gDIBitV, 22)) LCD_Disp_Txt(FONT_16, Vermid*2-margR-136+16*2+8, 30+high*5, "开启"); else LCD_Disp_Txt(FONT_16, Vermid*2-margR-136+16*2+8, 30+high*5, "关闭"); 
+	// LCD_Disp_Intx(FONT_16, (Vermid*2-margR-136)+16*4+8, 30+high*0, KX_119_recv_press.Data4, 5);
+	// LCD_Disp_Intx(FONT_16, (Vermid*2-margR-136)+16*4+8, 30+high*1, KX_119_recv_press.Press_Push, 5);
+	// LCD_Disp_Intx(FONT_16, (Vermid*2-margR-136)+16*4+8, 30+high*2, KX_119_recv_press.Press_Lube, 5);
+	// LCD_Disp_Intx(FONT_16, (Vermid*2-margR-136)+16*4+8, 30+high*3, KX_119_recv_press.Press_Grout, 5);
+	// if(_BitV(gDIBitV, 21)) LCD_Disp_Txt(FONT_16, Vermid*2-margR-136+16*3+8, 30+high*4, "开启"); else LCD_Disp_Txt(FONT_16, Vermid*2-margR-136+16*3+8, 30+high*4, "关闭"); 
+	// if(_BitV(gDIBitV, 22)) LCD_Disp_Txt(FONT_16, Vermid*2-margR-136+16*2+8, 30+high*5, "开启"); else LCD_Disp_Txt(FONT_16, Vermid*2-margR-136+16*2+8, 30+high*5, "关闭"); 
 }
 
 void Disp_mainSPJ(void)
@@ -350,6 +370,9 @@ void Disp_mainSPJ(void)
 	}
 
 #if 1
+	#if 1
+	Drilling_mode();
+	#else
 	static uint8_t swi = 0; // 0表示凿岩界面，1表示立拱界面
 	if(!_BitV(gDIBitV, 2) && !_BitV(gDIBitV, 3) && _BitV(gDIBitV, 9))// 切换到中臂时, 且处于凿岩模式
 	{
@@ -369,6 +392,7 @@ void Disp_mainSPJ(void)
 		}
 		LiGong_mode();
 	}
+	#endif
 		
 #else
      	LCD_Disp_Intx(FONT_24, 81, 31, remote_18c.L1, 3);  // 回转 			   

@@ -559,7 +559,7 @@
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
           <OutputDirectory>.\FLASH\</OutputDirectory>
-          <OutputName>Gm313_YKQ</OutputName>
+          <OutputName>HNGL_ZYJ_L4X_119T</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>1</CreateHexFile>
@@ -591,9 +591,9 @@
           </BeforeMake>
           <AfterMake>
             <RunUserProg1>1</RunUserProg1>
-            <RunUserProg2>0</RunUserProg2>
-            <UserProg1Name>fromelf.exe --bincombined --bincombined_base=0x000 --bincombined_padding=1,0 --output="$L@L.bin" "#L"</UserProg1Name>
-            <UserProg2Name></UserProg2Name>
+            <RunUserProg2>1</RunUserProg2>
+            <UserProg1Name>fromelf.exe --bincombined --bincombined_base=0x000 --bincombined_padding=1,0 --output="$L..\out\@L.bin" "#L"</UserProg1Name>
+            <UserProg2Name>"$L..\out\rename.bat" "$L..\out\@L.bin"</UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
             <nStopA1X>0</nStopA1X>
