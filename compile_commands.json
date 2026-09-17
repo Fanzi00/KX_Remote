@@ -1,0 +1,370 @@
+[
+    {
+        "command": "arm-none-eabi-gcc -c common/src/startup_LPC17xx.s -D__GNUC__ -Icommon/inc -ISrc -IUser -I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include -I../../../../../_software/keil_v5/ARM/ARMCC/include",
+        "arguments": [
+            "arm-none-eabi-gcc",
+            "-c",
+            "common/src/startup_LPC17xx.s",
+            "-D__GNUC__",
+            "-Icommon/inc",
+            "-ISrc",
+            "-IUser",
+            "-I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include",
+            "-I../../../../../_software/keil_v5/ARM/ARMCC/include"
+        ],
+        "directory": "D:/Desktop/KX_Remote/Source/Project/FSJ_666",
+        "file": "common/src/startup_LPC17xx.s"
+    },
+    {
+        "command": "arm-none-eabi-gcc -c common/src/system_LPC17xx.c -D__GNUC__ -Icommon/inc -ISrc -IUser -I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include -I../../../../../_software/keil_v5/ARM/ARMCC/include",
+        "arguments": [
+            "arm-none-eabi-gcc",
+            "-c",
+            "common/src/system_LPC17xx.c",
+            "-D__GNUC__",
+            "-Icommon/inc",
+            "-ISrc",
+            "-IUser",
+            "-I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include",
+            "-I../../../../../_software/keil_v5/ARM/ARMCC/include"
+        ],
+        "directory": "D:/Desktop/KX_Remote/Source/Project/FSJ_666",
+        "file": "common/src/system_LPC17xx.c"
+    },
+    {
+        "command": "arm-none-eabi-gcc -c Src/timer.c -D__GNUC__ -Icommon/inc -ISrc -IUser -I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include -I../../../../../_software/keil_v5/ARM/ARMCC/include",
+        "arguments": [
+            "arm-none-eabi-gcc",
+            "-c",
+            "Src/timer.c",
+            "-D__GNUC__",
+            "-Icommon/inc",
+            "-ISrc",
+            "-IUser",
+            "-I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include",
+            "-I../../../../../_software/keil_v5/ARM/ARMCC/include"
+        ],
+        "directory": "D:/Desktop/KX_Remote/Source/Project/FSJ_666",
+        "file": "Src/timer.c"
+    },
+    {
+        "command": "arm-none-eabi-gcc -c Src/can.c -D__GNUC__ -Icommon/inc -ISrc -IUser -I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include -I../../../../../_software/keil_v5/ARM/ARMCC/include",
+        "arguments": [
+            "arm-none-eabi-gcc",
+            "-c",
+            "Src/can.c",
+            "-D__GNUC__",
+            "-Icommon/inc",
+            "-ISrc",
+            "-IUser",
+            "-I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include",
+            "-I../../../../../_software/keil_v5/ARM/ARMCC/include"
+        ],
+        "directory": "D:/Desktop/KX_Remote/Source/Project/FSJ_666",
+        "file": "Src/can.c"
+    },
+    {
+        "command": "arm-none-eabi-gcc -c Src/main.c -D__GNUC__ -Icommon/inc -ISrc -IUser -I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include -I../../../../../_software/keil_v5/ARM/ARMCC/include",
+        "arguments": [
+            "arm-none-eabi-gcc",
+            "-c",
+            "Src/main.c",
+            "-D__GNUC__",
+            "-Icommon/inc",
+            "-ISrc",
+            "-IUser",
+            "-I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include",
+            "-I../../../../../_software/keil_v5/ARM/ARMCC/include"
+        ],
+        "directory": "D:/Desktop/KX_Remote/Source/Project/FSJ_666",
+        "file": "Src/main.c"
+    },
+    {
+        "command": "arm-none-eabi-gcc -c Src/CanOpen.c -D__GNUC__ -Icommon/inc -ISrc -IUser -I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include -I../../../../../_software/keil_v5/ARM/ARMCC/include",
+        "arguments": [
+            "arm-none-eabi-gcc",
+            "-c",
+            "Src/CanOpen.c",
+            "-D__GNUC__",
+            "-Icommon/inc",
+            "-ISrc",
+            "-IUser",
+            "-I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include",
+            "-I../../../../../_software/keil_v5/ARM/ARMCC/include"
+        ],
+        "directory": "D:/Desktop/KX_Remote/Source/Project/FSJ_666",
+        "file": "Src/CanOpen.c"
+    },
+    {
+        "command": "arm-none-eabi-gcc -c Src/adc.c -D__GNUC__ -Icommon/inc -ISrc -IUser -I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include -I../../../../../_software/keil_v5/ARM/ARMCC/include",
+        "arguments": [
+            "arm-none-eabi-gcc",
+            "-c",
+            "Src/adc.c",
+            "-D__GNUC__",
+            "-Icommon/inc",
+            "-ISrc",
+            "-IUser",
+            "-I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include",
+            "-I../../../../../_software/keil_v5/ARM/ARMCC/include"
+        ],
+        "directory": "D:/Desktop/KX_Remote/Source/Project/FSJ_666",
+        "file": "Src/adc.c"
+    },
+    {
+        "command": "arm-none-eabi-gcc -c Src/GPIO.c -D__GNUC__ -Icommon/inc -ISrc -IUser -I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include -I../../../../../_software/keil_v5/ARM/ARMCC/include",
+        "arguments": [
+            "arm-none-eabi-gcc",
+            "-c",
+            "Src/GPIO.c",
+            "-D__GNUC__",
+            "-Icommon/inc",
+            "-ISrc",
+            "-IUser",
+            "-I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include",
+            "-I../../../../../_software/keil_v5/ARM/ARMCC/include"
+        ],
+        "directory": "D:/Desktop/KX_Remote/Source/Project/FSJ_666",
+        "file": "Src/GPIO.c"
+    },
+    {
+        "command": "arm-none-eabi-gcc -c Src/i2c.c -D__GNUC__ -Icommon/inc -ISrc -IUser -I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include -I../../../../../_software/keil_v5/ARM/ARMCC/include",
+        "arguments": [
+            "arm-none-eabi-gcc",
+            "-c",
+            "Src/i2c.c",
+            "-D__GNUC__",
+            "-Icommon/inc",
+            "-ISrc",
+            "-IUser",
+            "-I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include",
+            "-I../../../../../_software/keil_v5/ARM/ARMCC/include"
+        ],
+        "directory": "D:/Desktop/KX_Remote/Source/Project/FSJ_666",
+        "file": "Src/i2c.c"
+    },
+    {
+        "command": "arm-none-eabi-gcc -c Src/uart.c -D__GNUC__ -Icommon/inc -ISrc -IUser -I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include -I../../../../../_software/keil_v5/ARM/ARMCC/include",
+        "arguments": [
+            "arm-none-eabi-gcc",
+            "-c",
+            "Src/uart.c",
+            "-D__GNUC__",
+            "-Icommon/inc",
+            "-ISrc",
+            "-IUser",
+            "-I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include",
+            "-I../../../../../_software/keil_v5/ARM/ARMCC/include"
+        ],
+        "directory": "D:/Desktop/KX_Remote/Source/Project/FSJ_666",
+        "file": "Src/uart.c"
+    },
+    {
+        "command": "arm-none-eabi-gcc -c Src/App_IO.c -D__GNUC__ -Icommon/inc -ISrc -IUser -I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include -I../../../../../_software/keil_v5/ARM/ARMCC/include",
+        "arguments": [
+            "arm-none-eabi-gcc",
+            "-c",
+            "Src/App_IO.c",
+            "-D__GNUC__",
+            "-Icommon/inc",
+            "-ISrc",
+            "-IUser",
+            "-I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include",
+            "-I../../../../../_software/keil_v5/ARM/ARMCC/include"
+        ],
+        "directory": "D:/Desktop/KX_Remote/Source/Project/FSJ_666",
+        "file": "Src/App_IO.c"
+    },
+    {
+        "command": "arm-none-eabi-gcc -c Src/App_Bus.c -D__GNUC__ -Icommon/inc -ISrc -IUser -I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include -I../../../../../_software/keil_v5/ARM/ARMCC/include",
+        "arguments": [
+            "arm-none-eabi-gcc",
+            "-c",
+            "Src/App_Bus.c",
+            "-D__GNUC__",
+            "-Icommon/inc",
+            "-ISrc",
+            "-IUser",
+            "-I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include",
+            "-I../../../../../_software/keil_v5/ARM/ARMCC/include"
+        ],
+        "directory": "D:/Desktop/KX_Remote/Source/Project/FSJ_666",
+        "file": "Src/App_Bus.c"
+    },
+    {
+        "command": "arm-none-eabi-gcc -c Src/Task.c -D__GNUC__ -Icommon/inc -ISrc -IUser -I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include -I../../../../../_software/keil_v5/ARM/ARMCC/include",
+        "arguments": [
+            "arm-none-eabi-gcc",
+            "-c",
+            "Src/Task.c",
+            "-D__GNUC__",
+            "-Icommon/inc",
+            "-ISrc",
+            "-IUser",
+            "-I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include",
+            "-I../../../../../_software/keil_v5/ARM/ARMCC/include"
+        ],
+        "directory": "D:/Desktop/KX_Remote/Source/Project/FSJ_666",
+        "file": "Src/Task.c"
+    },
+    {
+        "command": "arm-none-eabi-gcc -c Src/App_usr.c -D__GNUC__ -Icommon/inc -ISrc -IUser -I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include -I../../../../../_software/keil_v5/ARM/ARMCC/include",
+        "arguments": [
+            "arm-none-eabi-gcc",
+            "-c",
+            "Src/App_usr.c",
+            "-D__GNUC__",
+            "-Icommon/inc",
+            "-ISrc",
+            "-IUser",
+            "-I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include",
+            "-I../../../../../_software/keil_v5/ARM/ARMCC/include"
+        ],
+        "directory": "D:/Desktop/KX_Remote/Source/Project/FSJ_666",
+        "file": "Src/App_usr.c"
+    },
+    {
+        "command": "arm-none-eabi-gcc -c Src/i2c2.c -D__GNUC__ -Icommon/inc -ISrc -IUser -I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include -I../../../../../_software/keil_v5/ARM/ARMCC/include",
+        "arguments": [
+            "arm-none-eabi-gcc",
+            "-c",
+            "Src/i2c2.c",
+            "-D__GNUC__",
+            "-Icommon/inc",
+            "-ISrc",
+            "-IUser",
+            "-I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include",
+            "-I../../../../../_software/keil_v5/ARM/ARMCC/include"
+        ],
+        "directory": "D:/Desktop/KX_Remote/Source/Project/FSJ_666",
+        "file": "Src/i2c2.c"
+    },
+    {
+        "command": "arm-none-eabi-gcc -c Src/App_DGUS.c -D__GNUC__ -Icommon/inc -ISrc -IUser -I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include -I../../../../../_software/keil_v5/ARM/ARMCC/include",
+        "arguments": [
+            "arm-none-eabi-gcc",
+            "-c",
+            "Src/App_DGUS.c",
+            "-D__GNUC__",
+            "-Icommon/inc",
+            "-ISrc",
+            "-IUser",
+            "-I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include",
+            "-I../../../../../_software/keil_v5/ARM/ARMCC/include"
+        ],
+        "directory": "D:/Desktop/KX_Remote/Source/Project/FSJ_666",
+        "file": "Src/App_DGUS.c"
+    },
+    {
+        "command": "arm-none-eabi-gcc -c Src/App_lcd.c -D__GNUC__ -Icommon/inc -ISrc -IUser -I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include -I../../../../../_software/keil_v5/ARM/ARMCC/include",
+        "arguments": [
+            "arm-none-eabi-gcc",
+            "-c",
+            "Src/App_lcd.c",
+            "-D__GNUC__",
+            "-Icommon/inc",
+            "-ISrc",
+            "-IUser",
+            "-I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include",
+            "-I../../../../../_software/keil_v5/ARM/ARMCC/include"
+        ],
+        "directory": "D:/Desktop/KX_Remote/Source/Project/FSJ_666",
+        "file": "Src/App_lcd.c"
+    },
+    {
+        "command": "arm-none-eabi-gcc -c Src/TEA.c -D__GNUC__ -Icommon/inc -ISrc -IUser -I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include -I../../../../../_software/keil_v5/ARM/ARMCC/include",
+        "arguments": [
+            "arm-none-eabi-gcc",
+            "-c",
+            "Src/TEA.c",
+            "-D__GNUC__",
+            "-Icommon/inc",
+            "-ISrc",
+            "-IUser",
+            "-I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include",
+            "-I../../../../../_software/keil_v5/ARM/ARMCC/include"
+        ],
+        "directory": "D:/Desktop/KX_Remote/Source/Project/FSJ_666",
+        "file": "Src/TEA.c"
+    },
+    {
+        "command": "arm-none-eabi-gcc -c Src/App_Comm.c -D__GNUC__ -Icommon/inc -ISrc -IUser -I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include -I../../../../../_software/keil_v5/ARM/ARMCC/include",
+        "arguments": [
+            "arm-none-eabi-gcc",
+            "-c",
+            "Src/App_Comm.c",
+            "-D__GNUC__",
+            "-Icommon/inc",
+            "-ISrc",
+            "-IUser",
+            "-I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include",
+            "-I../../../../../_software/keil_v5/ARM/ARMCC/include"
+        ],
+        "directory": "D:/Desktop/KX_Remote/Source/Project/FSJ_666",
+        "file": "Src/App_Comm.c"
+    },
+    {
+        "command": "arm-none-eabi-gcc -c Src/wl.c -D__GNUC__ -Icommon/inc -ISrc -IUser -I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include -I../../../../../_software/keil_v5/ARM/ARMCC/include",
+        "arguments": [
+            "arm-none-eabi-gcc",
+            "-c",
+            "Src/wl.c",
+            "-D__GNUC__",
+            "-Icommon/inc",
+            "-ISrc",
+            "-IUser",
+            "-I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include",
+            "-I../../../../../_software/keil_v5/ARM/ARMCC/include"
+        ],
+        "directory": "D:/Desktop/KX_Remote/Source/Project/FSJ_666",
+        "file": "Src/wl.c"
+    },
+    {
+        "command": "arm-none-eabi-gcc -c Abstract.txt -D__GNUC__ -Icommon/inc -ISrc -IUser -I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include -I../../../../../_software/keil_v5/ARM/ARMCC/include",
+        "arguments": [
+            "arm-none-eabi-gcc",
+            "-c",
+            "Abstract.txt",
+            "-D__GNUC__",
+            "-Icommon/inc",
+            "-ISrc",
+            "-IUser",
+            "-I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include",
+            "-I../../../../../_software/keil_v5/ARM/ARMCC/include"
+        ],
+        "directory": "D:/Desktop/KX_Remote/Source/Project/FSJ_666",
+        "file": "Abstract.txt"
+    },
+    {
+        "command": "arm-none-eabi-gcc -c Src/config.h -D__GNUC__ -Icommon/inc -ISrc -IUser -I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include -I../../../../../_software/keil_v5/ARM/ARMCC/include",
+        "arguments": [
+            "arm-none-eabi-gcc",
+            "-c",
+            "Src/config.h",
+            "-D__GNUC__",
+            "-Icommon/inc",
+            "-ISrc",
+            "-IUser",
+            "-I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include",
+            "-I../../../../../_software/keil_v5/ARM/ARMCC/include"
+        ],
+        "directory": "D:/Desktop/KX_Remote/Source/Project/FSJ_666",
+        "file": "Src/config.h"
+    },
+    {
+        "command": "arm-none-eabi-gcc -c User/KXCAN_GLGJT312E.c -D__GNUC__ -Icommon/inc -ISrc -IUser -I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include -I../../../../../_software/keil_v5/ARM/ARMCC/include",
+        "arguments": [
+            "arm-none-eabi-gcc",
+            "-c",
+            "User/KXCAN_GLGJT312E.c",
+            "-D__GNUC__",
+            "-Icommon/inc",
+            "-ISrc",
+            "-IUser",
+            "-I../../../../../_cache/keil_v5_pack/ARM/CMSIS/5.5.1/CMSIS/Core/Include",
+            "-I../../../../../_software/keil_v5/ARM/ARMCC/include"
+        ],
+        "directory": "D:/Desktop/KX_Remote/Source/Project/FSJ_666",
+        "file": "User/KXCAN_GLGJT312E.c"
+    }
+]

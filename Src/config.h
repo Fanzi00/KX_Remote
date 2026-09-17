@@ -73,6 +73,7 @@
 #include "APP_lcd.h"
 #include "APP_usr.h"
 #include "app_comm.h"
+#include "_Device_config.h"
 
 
 

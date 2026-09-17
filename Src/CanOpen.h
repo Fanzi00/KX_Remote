@@ -69,17 +69,7 @@ comments:
 #define  CANOPEN_MOD_SAVE		0xA0		// ±£¥Ê≈‰÷√
 #define  CANOPEN_MOD_SAVE_OK	0xA1		// ±£¥Ê≈‰÷√
 
-typedef struct KX119_Recv{
-	uint16_t Data0;
-	uint16_t Data1;
-	uint16_t Data2;
-	uint16_t Data3;
-	uint16_t Data4;
-	uint16_t Data5;
-	uint16_t Data6;
-	uint16_t Data7;
-}KX119_Recv_t;
-extern KX119_Recv_t KX_119_recv_press;
+
 
 extern unsigned char gCanOpenFlag;
 extern unsigned int gSysStatus;

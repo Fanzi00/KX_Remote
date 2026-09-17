@@ -20,7 +20,7 @@ CANOPEN 协议相关处理函数
 #include "canopen.h"
 //#include "..\can\LPC1700can.h"
 
-KX119_Recv_t KX_119_recv_press = {0};
+
 const unsigned char cReadErr[9]="CfgRdErr";
 
 //extern MessageDetail  MessageDetailT;                                          /* 定义发送帧                   */
@@ -748,33 +748,10 @@ void app10ms(void)
 	{
 	   KX_127_63(VKC_Send,i) ;
 
-	}		
-	// 解析接收发送的数据，yk变量属于调试变量
-	uint16_t index = gRunInfo.vRcvWL[0] | (gRunInfo.vRcvWL[1] << 8);
-	switch(index)
-	{
-		case 0:
-		{
-			KX_119_recv_press.Data0 = gRunInfo.vRcvWL[2] | (gRunInfo.vRcvWL[3] << 8);
-			KX_119_recv_press.Data1 = gRunInfo.vRcvWL[4] | (gRunInfo.vRcvWL[5] << 8);
-			KX_119_recv_press.Data2 = gRunInfo.vRcvWL[6] | (gRunInfo.vRcvWL[7] << 8);
-			break;
-		}
-		case 1:
-		{
-			KX_119_recv_press.Data3 = gRunInfo.vRcvWL[2];
-			KX_119_recv_press.Data4 = gRunInfo.vRcvWL[3];
-			KX_119_recv_press.Data5 = gRunInfo.vRcvWL[4] | gRunInfo.vRcvWL[5] << 8;
-			KX_119_recv_press.Data6 = gRunInfo.vRcvWL[6] | gRunInfo.vRcvWL[7] << 8;
-			break;
-		}
-		case 2:
-		{
-			// KX_119_recv_press.Data6 = gRunInfo.vRcvWL[2] | (gRunInfo.vRcvWL[3] << 8);
-			// KX_119_recv_press.Data7 = gRunInfo.vRcvWL[4] | (gRunInfo.vRcvWL[5] << 8);
-			break;
-		}
 	}
+
+	WL_Recv();
+	
 	#if 0
 					remote_18c.L1           =	 gRunInfo.vRcvWL[0] + yk1 ; 
 					remote_18c.L2           =	 gRunInfo.vRcvWL[1] + yk2 ; 

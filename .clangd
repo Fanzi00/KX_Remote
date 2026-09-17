@@ -1,0 +1,75 @@
+If:
+  PathMatch: .*\.(c|h|s)$
+
+CompileFlags:
+  # 指定使用的编译器为 ARMCC（clangd 会据此推导内置宏和头文件路径）
+  Compiler: armcc.exe
+
+  Add:
+    # 启用 __declspec 支持，解决 ARMCC 头文件中的 __declspec 属性报错
+    - '-fdeclspec'
+    # 指定目标平台为 32 位 ARM Cortex-M，避免 clangd 默认 64 位环境导致 size_t 等类型宽度冲突
+    - '--target=armv7m-none-eabi'
+    # 忽略未知的警告选项，防止 clangd 对不认识的 -W 选项报错
+    - -Wno-unknown-warning-option
+    # 忽略源文件编码无效的警告（常用于 GB2312 等非 UTF-8 文件）
+    - -Wno-invalid-source-encoding
+    # 忽略未知的 #pragma 指令警告
+    - -Wno-unknown-pragmas
+    # 忽略 ARMCC 特有的匿名联合体 pragma 警告
+    - -Wno-armcc-pragma-anon-unions
+    # 忽略非标准包含路径的警告
+    - -Wno-nonportable-include-path
+    # 忽略未使用的命令行参数警告
+    - -Wno-unused-command-line-argument
+    # 定义 __CC_ARM，让 ARMCC 头文件识别当前为 ARMCC 编译环境
+    - -D__CC_ARM
+    # 定义 ARMCC 版本号（5.06 对应 5060000），影响头文件中的条件编译分支
+    - -D__ARMCC_VERSION=5060000
+    # 将 ARMCC 的 __INLINE 宏映射为标准 inline
+    - -D__INLINE=inline
+    # 将 ARMCC 的 __STATIC_INLINE 宏映射为 static inline
+    - -D__STATIC_INLINE=static inline
+    # 将 ARMCC 的 __ASM 宏映射为标准 __asm
+    - -D__ASM=__asm
+    # 将 ARMCC 的 __WEAK 宏映射为 GCC 风格的 weak 属性
+    - -D__WEAK=__attribute__((weak))
+    # 新增：忽略 __value_in_regs 限定符
+    - -D__value_in_regs=        
+    # 添加 MSYS2 UCRT 环境的系统头文件路径
+    - -isystemD:\.software\Keil_v5\ARM\ARMCC\include 
+
+  Remove:
+    # 移除 ARMCC 特有的 APCS 接口选项，clangd 无法识别
+    - '--apcs=interwork'
+    # 移除 --cpu 选项（clangd 通过 --target 指定 CPU 架构）
+    - '--cpu'
+    # 移除 ARMCC 的 --li 选项（链接时内联）
+    - '--li'
+    # 移除 ARMCC 的 --c99 选项（clangd 默认使用合适的 C 标准）
+    - '--c99'
+    # 移除 --split_sections 选项（函数分段存放）
+    - '--split_sections'
+    # 移除所有 --diag_suppress=* 形式的 ARMCC 诊断抑制选项
+    - '--diag_suppress=*'
+    # 移除 --no_depend_system_headers 选项
+    - '--no_depend_system_headers'
+    # 移除 --depend 选项（生成依赖文件）
+    - '--depend'
+    # 移除 --gnu 选项（ARMCC 的 GNU 扩展模式）
+    - '--gnu'
+    # 移除 -ffp-mode=* 浮点模式选项
+    - '-ffp-mode=*'
+    # 移除之前手动添加的 __size_t 宏定义，避免与 --target 推导出的类型冲突
+    - '-D__size_t=*'
+    # 移除手动添加的 __uint32_t 宏定义
+    - '-D__uint32_t=*'
+    # 移除手动添加的 __uint16_t 宏定义
+    - '-D__uint16_t=*'
+    # 移除手动添加的 __uint8_t 宏定义
+    - '-D__uint8_t=*'
+
+Diagnostics:
+  Suppress:
+    # 抑制数组初始化器过多的警告（常用于字符串数组第二维不足时的误报）
+    - 'excess-initializers'
