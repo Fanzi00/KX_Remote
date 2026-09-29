@@ -1,4 +1,5 @@
-#ifndef __USER_CONFIG_H
+#ifndef __DEVICE_CONFIG_H
+#define __DEVICE_CONFIG_H
 
 #include <stdint.h>
 
@@ -28,4 +29,4 @@
 
 
 
-#endif // #ifndef __USER_CONFIG_H
+#endif // #ifndef __DEVICE_CONFIG_H
