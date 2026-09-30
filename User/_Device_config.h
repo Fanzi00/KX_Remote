@@ -40,7 +40,7 @@ extern const KnobValCfg_t gKnobValTab[];
 /*******************USER_TYPE*******************/
 /*******************USER_TYPE*******************/
 
-#define USER_TYPE 			KXCAN_GLZYTC_L2X
+#define USER_TYPE 			KXCAN_GLGJT312E_L3X
 
 /*******************USER_TYPE*******************/
 /*******************USER_TYPE*******************/
@@ -49,7 +49,8 @@ extern const KnobValCfg_t gKnobValTab[];
 #if (USER_TYPE == KXCAN_GLGJT312E_L3X)
 #include "KXCAN_GLGJT312E.h"
 
-#define SWI_ICON_EN	0		// 该机型暂无纽子图标表
+#define SWI_ICON_EN 1 // 是否有扭子开关
+#define _XN_LiuL    0 // 是否有流量旋钮
 
 #endif // #if (USER_TYPE == KXCAN_GLGJT312E_L3X)
 
@@ -62,7 +63,6 @@ extern const KnobValCfg_t gKnobValTab[];
 #define _XN_LiuL    1 // 是否有流量旋钮
 
 #endif // #if (USER_TYPE == KXCAN_GLZYTC_L2X)
-
 
 
 #endif // #ifndef __DEVICE_CONFIG_H
