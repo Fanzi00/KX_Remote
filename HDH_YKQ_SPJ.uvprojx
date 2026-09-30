@@ -516,6 +516,11 @@
               <FileType>1</FileType>
               <FilePath>.\User\KXCAN_GLGJT312E.c</FilePath>
             </File>
+            <File>
+              <FileName>KXCAN_GLZYTC.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\KXCAN_GLZYTC.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1033,6 +1038,11 @@
               <FileName>KXCAN_GLGJT312E.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\User\KXCAN_GLGJT312E.c</FilePath>
+            </File>
+            <File>
+              <FileName>KXCAN_GLZYTC.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\KXCAN_GLZYTC.c</FilePath>
             </File>
           </Files>
         </Group>

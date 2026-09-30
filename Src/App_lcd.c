@@ -8,6 +8,7 @@
 #include "app_lcd.h"
 #include "LPC17xx.h"
 #include "config.h"
+#include "_Device_config.h"
 
 /*********************************************************************************************************************
 *
@@ -370,6 +371,39 @@ if (remote_18c.message_8) {	 if (remote_18c.message_6){	LCD_Disp_Txt(FONT_16, 20
 }
 
 
+// 纽子开关图标绘制（配置表在各遥控器 .c 中：gSwiIconTab1/2，见 _Device_config.h 的 SwiIconCfg_t）
+#if SWI_ICON_EN
+static unsigned char SwiIcon_Map(unsigned char v, unsigned char map)
+{
+	if(map == 1)	{ if(v == 1) return 2; if(v == 2) return 1; return v; }
+	if(map == 2)	return v + 1;					// 两档开关，图标占 1/2
+	if(map == 3)	return (v > 2) ? 0 : v;
+	if(map == 4)	{ if(v == 1) return 2; if(v == 2) return 1; return 0; }
+	return v;
+}
+
+// 遍历绘制一行图标表（表以 en==0xFF 结束）
+static void Disp_SwiIconRow(const SwiIconCfg_t *pT, unsigned long vNow, unsigned long vLast,
+							unsigned char reFlg, unsigned char vPicX)
+{
+	unsigned char i;
+	for(i = 0; pT[i].en != 0xFF; i++)
+	{
+		unsigned char vS, vS0;
+		if(pT[i].en == 0)
+			continue;
+		vS  = (vNow  >> pT[i].shift) & pT[i].mask;
+		vS0 = (vLast >> pT[i].shift) & pT[i].mask;
+		if((vS != vS0) || reFlg)
+		{
+			vS = SwiIcon_Map(vS, pT[i].map);
+			LCD_Cut_PICRect(0, vPicX, gLCD_IO_XY[vS][0], gLCD_IO_XY[vS][1],
+				gLCD_IO_XY[vS][2], gLCD_IO_XY[vS][3], pT[i].x, pT[i].y);
+		}
+	}
+}
+#endif
+
 void Disp_Rock_Pic(unsigned char reFlg)
 {
 		unsigned char vTmpV = 0;
@@ -468,100 +502,17 @@ void Disp_Rock_Pic(unsigned char reFlg)
 		if(stDisp == 0)
 		{
 			////////////////////////////////////////  第一排纽子  ////////////////////////////////////////
-			vXX = 45;
-			vYY = 132;
-			vTmpV = (gDIBitV >> 2) & 0x03;
-			vTmpV0 = (stDIBitV1 >> 2) & 0x03;
-			if((vTmpV != vTmpV0) || reFlg)
-			{
-				//vTmpV = (vTmpV + 1) ^ 3;					// 两档纽子，占一位 
-				LCD_Cut_PICRect(0, vPicX, gLCD_IO_XY[vTmpV][0], gLCD_IO_XY[vTmpV][1],
-					gLCD_IO_XY[vTmpV][2], gLCD_IO_XY[vTmpV][3], vXX, vYY);
-			}
-			vXX += 40;
-			vTmpV = (gDIBitV >> 1) & 0x01;
-			vTmpV0 = (stDIBitV1 >> 1) & 0x01;
-			if((vTmpV != vTmpV0) || reFlg)
-			{
-					vTmpV += 1;
-				LCD_Cut_PICRect(0, vPicX, gLCD_IO_XY[vTmpV][0], gLCD_IO_XY[vTmpV][1],
-					gLCD_IO_XY[vTmpV][2], gLCD_IO_XY[vTmpV][3], vXX, vYY);
-			}
-			
-			vXX += 120;
-			vTmpV = (gDIBitV>>8) & 0x03;
-			vTmpV0 = (stDIBitV1>>8) & 0x03;
-			if((vTmpV != vTmpV0) || reFlg)
-			{
-				if(vTmpV == 1)
-					vTmpV = 2;
-				else if(vTmpV == 2)
-					vTmpV = 1;
-				LCD_Cut_PICRect(0, vPicX, gLCD_IO_XY[vTmpV][0], gLCD_IO_XY[vTmpV][1],
-					gLCD_IO_XY[vTmpV][2], gLCD_IO_XY[vTmpV][3], vXX, vYY);
-			}
-			vXX += 40;
-			vTmpV = (gDIBitV>>10) & 0x03;
-			vTmpV0 = (stDIBitV1>>10) & 0x03;
-			if((vTmpV != vTmpV0) || reFlg)
-			{
-				if(vTmpV == 1)
-					vTmpV = 2;
-				else if(vTmpV == 2)
-					vTmpV = 1;
-				LCD_Cut_PICRect(0, vPicX, gLCD_IO_XY[vTmpV][0], gLCD_IO_XY[vTmpV][1],
-					gLCD_IO_XY[vTmpV][2], gLCD_IO_XY[vTmpV][3], vXX, vYY);
-			}
-		//delay_ms(3);
+		#if SWI_ICON_EN
+			Disp_SwiIconRow(gSwiIconTab1, gDIBitV, stDIBitV1, reFlg, vPicX);
+		#endif
 		}
 		
 		if(stDisp == 0)
 		{
 			////////////////////////////////////////  第二排纽子  ////////////////////////////////////////
-			vXX = 45;
-			vYY = 170;
-			vTmpV = (gDIBitV>>4) & 0x03;
-			vTmpV0 = (stDIBitV2>>4) & 0x03;
-			if((vTmpV != vTmpV0) || reFlg)
-			{
-				//vTmpV = (vTmpV + 1) ^ 3;
-				if(vTmpV > 2)
-					vTmpV = 0;
-
-				LCD_Cut_PICRect(0, vPicX, gLCD_IO_XY[vTmpV][0], gLCD_IO_XY[vTmpV][1],
-					gLCD_IO_XY[vTmpV][2], gLCD_IO_XY[vTmpV][3], vXX, vYY);
-			}
-		
-			vXX += 40;
-			vTmpV = (gDIBitV>>6) & 0x03;
-			vTmpV0 = (stDIBitV2>>6) & 0x03;
-			if((vTmpV != vTmpV0) || reFlg)
-			{
-				LCD_Cut_PICRect(0, vPicX, gLCD_IO_XY[vTmpV][0], gLCD_IO_XY[vTmpV][1],
-					gLCD_IO_XY[vTmpV][2], gLCD_IO_XY[vTmpV][3], vXX, vYY);
-			}
-			vXX += 120;
-			vTmpV = (gDIBitV>> 12) & 0x03;
-			vTmpV0 = (stDIBitV2>> 12) & 0x03;
-			if((vTmpV != vTmpV0) || reFlg)
-			{
-				if(vTmpV == 1)
-					vTmpV = 2;
-				else if(vTmpV == 2)
-					vTmpV = 1;
-				else
-					vTmpV = 0;
-				LCD_Cut_PICRect(0, vPicX, gLCD_IO_XY[vTmpV][0], gLCD_IO_XY[vTmpV][1],
-					gLCD_IO_XY[vTmpV][2], gLCD_IO_XY[vTmpV][3], vXX, vYY);
-			}
-			vXX += 40;
-			vTmpV = (gDIBitV>>28) & 0x03;
-			vTmpV0 = (stDIBitV2>>28) & 0x03;
-			if((vTmpV != vTmpV0) || reFlg)
-			{
-				LCD_Cut_PICRect(0, vPicX, gLCD_IO_XY[vTmpV][0], gLCD_IO_XY[vTmpV][1],
-					gLCD_IO_XY[vTmpV][2], gLCD_IO_XY[vTmpV][3], vXX, vYY);
-			}
+		#if SWI_ICON_EN
+			Disp_SwiIconRow(gSwiIconTab2, gDIBitV, stDIBitV2, reFlg, vPicX);
+		#endif
 			
 			////////////////////////////////////////  第三排纽子  ////////////////////////////////////////
 /*
@@ -604,6 +555,30 @@ void Disp_Rock_Pic(unsigned char reFlg)
 const unsigned short romArmValDisp[8][2]={{40,58},{75,58},{110,58},{145,58},{180,58},{215,58},{250,58} ,{285,58}};	// 摇杆值
  unsigned short romArmDSDisp[8][2]={{40,81},{75,81},{110,81},{145,81},{180,81},{215,81},{250,81} ,{285,81}};		// 死区值 1~9
 const unsigned char romDI_DispDO_TabZZT[8] = {0,1, 2, 3,4,5,99};
+// 流量旋钮"图标+数值"绘制（配置表在各遥控器 .c 中：gKnobValTab，见 _Device_config.h 的 KnobValCfg_t）
+#if _XN_LiuL
+// 图标圆弧，仅重画时调用一次
+static void Disp_KnobIcon(void)
+{
+	unsigned char i;
+	for(i = 0; gKnobValTab[i].en != 0xFF; i++)
+	{
+		if(gKnobValTab[i].en)
+			LCD_Disp_Arc(1, gKnobValTab[i].arcX, gKnobValTab[i].arcY, 8, 80, 640);
+	}
+}
+// 数值，周期刷新调用（显示 ADCRst 原始采样值）
+static void Disp_KnobValTab(void)
+{
+	unsigned char i;
+	for(i = 0; gKnobValTab[i].en != 0xFF; i++)
+	{
+		if(gKnobValTab[i].en == 0)
+			continue;
+		LCD_Disp_Intx(FONT_16, gKnobValTab[i].x, gKnobValTab[i].y, ADCRst[gKnobValTab[i].ch], gKnobValTab[i].digit);
+	}
+}
+#endif
 // 显示遥控按键
 void Disp_ZZT_CtrlStatus(void)
 {
@@ -636,7 +611,7 @@ void Disp_ZZT_CtrlStatus(void)
 		LCD_Disp_PIC(7);
 		#if _XN_LiuL
 			//LCD_Disp_Txt(FONT_16, 2, vDispLine1, "旋钮:");
-			LCD_Disp_Arc(1, 42, vDispLine1+8, 8, 80, 640);
+			Disp_KnobIcon();												// 旋钮圆弧图标，配置表在各遥控器 .c 中
 		#endif
 //			LCD_Disp_Arc(1, 245, vDispLine1+8, 8, 80, 640);
 			//LCD_Disp_Txt(FONT_16, 240, vDispLine1, "旋钮:");
@@ -673,13 +648,10 @@ void Disp_ZZT_CtrlStatus(void)
 		//if(gLCDPage.vPageX == 8)
 		{
 		#if _XN_LiuL
-			gADArmConV[_ARM_MAX-2] = gADArmSend[_ARM_MAX-2] * 255 / 250;
-			LCD_Disp_Intx(FONT_16, 54, vDispLine1, gADArmConV[_ARM_MAX-2], 3);						// 刷动
-			gADArmConV[_ARM_MAX-1] = gADArmSend[_ARM_MAX-1] * 255 / 250;
-			LCD_Disp_Intx(FONT_16, 257, vDispLine1, gADArmConV[_ARM_MAX-1], 3);						// 刷动
+			Disp_KnobValTab();														// 流量旋钮数值，配置表在各遥控器 .c 中
 		#else
 			gADArmConV[_ARM_MAX-1] = gADArmSend[_ARM_MAX-1] * 255 / 250;
-//			LCD_Disp_Intx(FONT_16, 257, vDispLine1, gADArmConV[_ARM_MAX-1], 3);						// 刷动
+//			LCD_Disp_Intx(FONT_16, 257, vDispLine1+5, gADArmConV[_ARM_MAX-1], 3);						// 刷动
 		#endif
 		}
 

@@ -9,7 +9,8 @@
         "clangd.arguments": [
             "--header-insertion=never"
         ],
-        "files.autoGuessEncoding": true,
+        "files.encoding": "gb2312",
+        "files.autoGuessEncoding": false,
         "C_Cpp.default.configurationProvider": "cl.eide",
         "C_Cpp.errorSquiggles": "disabled",
         "files.associations": {

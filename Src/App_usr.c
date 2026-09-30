@@ -12,6 +12,9 @@
 extern mOverInfo  gOverInfo;
 extern mOvHandInfo gOvHandInfo;
 
+uint32_t gSelfChkMask = 0;
+uint8_t gSelfChkOK = 0;
+
 mPswd  gPswd;
 mRunInfo gRunInfo;
 mBDParam gBDParam[2];			// 本地存储的标定信息	
@@ -130,20 +133,20 @@ void Arm_Study(void)
 				gBDParam[0].vRockV[i*2][0] = ADCRst[gArmUpTab[i]];
 				gBDParam[0].vRockV[i*2+1][0] = ADCRst[gArmDownTab[i]];
 			}
-			#if _V_2					// 新的版本，旋钮到最大，采样值最小 0
-		#if _XN_LiuL
+		#if _V_2					// 新的版本，旋钮到最大，采样值最小 0
+			#if _XN_LiuL
 				if(ADCRst[_XN1_AD_CHN] > 0x800)
 				{
 					gBDParam[0].vRockV[_XN1_RV_CHN][0] = ADCRst[_XN1_AD_CHN]-10;			// 旋钮的最小值
 				}
-		#endif		
+			#endif		
 				if(ADCRst[_XN2_AD_CHN] > 0x800)
 				{
 					gBDParam[0].vRockV[_XN2_RV_CHN][0] = ADCRst[_XN2_AD_CHN]-10;			// 旋钮的最小值
 					LCD_Disp_Txt(FONT_12, vDX, vDY, "中位学习完成    ");
 				//	LCD_Disp_Txt(FONT_16, 100, 150, "中位学习完成    ");
 				}
-			#else					// 旧的版本，旋钮到最大，采样值最大
+		#else					// 旧的版本，旋钮到最大，采样值最大
 				if(ADCRst[_XN1_AD_CHN] < 0x100)
 				{
 					gBDParam[0].vRockV[_XN1_RV_CHN][0] = ADCRst[_XN1_AD_CHN]+10;			// 旋钮的最小值
@@ -154,7 +157,7 @@ void Arm_Study(void)
 					gBDParam[0].vRockV[_XN2_RV_CHN][0] = ADCRst[_XN2_AD_CHN]+10;			// 旋钮的最小值
 				//	LCD_Disp_Txt(FONT_16, 100, 150, "中位学习完成    ");
 				}
-			#endif
+		#endif
 		}
 	}
 	if(gKeyValue == _F3)						// F3, 最大 最小值学习，  上下， 左右

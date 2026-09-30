@@ -317,6 +317,7 @@ int main( void )
 		//	Can_Prog_Send(0);			// ×ª»»Êý¾Ý
 			app10ms_flags = 0;
 			app10ms() ;
+			SelfChk_main() ;
 		}
 		if(gLCDFlg)
 		{

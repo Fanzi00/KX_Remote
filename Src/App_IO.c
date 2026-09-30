@@ -339,6 +339,7 @@ void DI_Scan(void)
 		gKeyValue0x = gKeyValue;
 	}
 
+	#if 0
 	if(_BitV(gDIBitV, 20))
 		gLaBaFlg = 1;
 	if(_BitV(gDIBitV, 18))
@@ -351,6 +352,9 @@ void DI_Scan(void)
 		gLaBaFlg = 1;
 	if(_BitV(gDIBitV, 23))
 		gLaBaFlg = 1;
+#else
+	Activar();
+#endif
 	
 	if(gPowerChk)
 		gLaBaFlg = 0;

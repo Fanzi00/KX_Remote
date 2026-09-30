@@ -22,7 +22,7 @@
 #define  _FA_DFS		0				// 是否为 DFS 阀
 #define  _FA_DO			0				// 是否为 DO 阀
 
-#define  _XN_LiuL		0				// 是否有流量旋钮
+
 
 #define  _ARM_MAX		10				// 最大摇杆数
 #define  _ARM_ROCK	4					// 摇杆数
@@ -146,6 +146,8 @@ typedef struct
 extern uchar   gSaveFlg ;
 extern uint32_t gPowerChk;			// 上电检测结果，为0，OK，非0，摇杆或按键故障，所有输出清0
 extern	 unsigned int stStudyFlg ;
+extern uint32_t gSelfChkMask;		
+extern uint8_t gSelfChkOK;
 
 extern unsigned char gBDCmd ;
 extern unsigned char gBDCmdAck;
