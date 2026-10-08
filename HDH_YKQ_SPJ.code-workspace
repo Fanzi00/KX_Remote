@@ -45,5 +45,8 @@
             "dan-c-underwood.arm",
             "marus25.cortex-debug"
         ]
-    }
+	},
+	"trae": {
+		"workspaceId": "82132ebb0c1a709b893b721b0a4bdb53"
+	}
 }

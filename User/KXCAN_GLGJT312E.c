@@ -64,7 +64,8 @@ void Activar()
 	// 只设置了F3-F8，其他按钮未设置
 	if(F.F3 || F.F4 || F.F5 || F.F6 || F.F7 || F.F8)
 	{
-		gLaBaFlg = 1;
+		if(gSelfChkMask == 0)		// 自检异常不允许激活（信号图标红期间持续自检）
+			gLaBaFlg = 1;
 	}
 }
 
@@ -119,7 +120,7 @@ static void SelfChk_Proc(uint32_t* err_mask)
 	else if(_BitV(vDI, 17))			*err_mask = 31;		// 泵站启停  0x18A[2].1
 	else if(_BitV(vDI, 18))			*err_mask = 32;		// F3        0x18A[2].2
 	else if(_BitV(vDI, 19))			*err_mask = 33;		// 使能      0x18A[2].3
-	else if(_BitV(vDI, 20))			*err_mask = 34;		// 连接通讯响 0x18A[2].4
+	// 连接通讯响(0x18A[2].4)=激活键，不作自检项（自检时按下它用于激活）
 	else if(_BitV(vDI, 21))			*err_mask = 35;		// F6        0x18A[2].5
 	else if(_BitV(vDI, 22))			*err_mask = 36;		// F7        0x18A[2].6
 	else if(_BitV(vDI, 23))			*err_mask = 37;		// F8        0x18A[2].7
@@ -140,13 +141,13 @@ static void SelfChk_Proc(uint32_t* err_mask)
 }
 
 // 自检状态机，10ms 节拍：0=上电延时300ms → 1=自检循环 → 2=正常运行
-// 从未连接过：运行中持续自检，异常即时显示（约10ms检出，LCD刷新200ms内上屏）
-// 连接过又掉线：连续1.5秒无数据才重新自检（防单次丢帧误判），走0→1重检
+// 以屏上信号图标为判据（图标红 = 未激活gLaBaFlg==0 或 无线信号gWLSingV<=1，见 App_lcd.c）：
+// 图标红：持续自检，按了立刻报、松开立刻消；自检异常则禁止激活（见 Activar）
+// 图标非红（已激活且在线）：正常操控不做自检；若带异常则回自检循环，全部松开才恢复
 void SelfChk_main(void)
 {
 	static unsigned char status = 0;
 	static unsigned char dly = 0;
-	static unsigned char stLinked = 0;		// 本次开机是否连接过接收机
 
 	switch(status)
 	{
@@ -166,30 +167,17 @@ void SelfChk_main(void)
 			}
 			break;
 		case 2: // 正常运行
-			if(gWLSingV > 1)						// 在线
+			if(gLaBaFlg != 0 && gWLSingV > 1)	// 信号图标非红：已激活且在线，正常操控，不做自检
 			{
-				stLinked = 1;
-				dly = 0;
-				if(gSelfChkMask != 0)				// 带着异常上线：回自检循环，全部松开才恢复
+				if(gSelfChkMask != 0)				// 带着异常（如掉线期间按过键）恢复：回自检循环，全部松开才恢复
 					status = 1;
 				break;
 			}
-			if(stLinked == 0)						// 从未连接过：持续自检，按了立刻报、松开立刻消
-			{
-				SelfChk_Proc(&gSelfChkMask);
-				if(gSelfChkMask != 0)
-					gSelfChkOK = 0;					// 有异常只发安全帧
-				else
-					gSelfChkOK = 1;
-			}
-			else if(++dly >= 150)					// 连接后掉线：10ms×150=连续1.5秒无数据
-			{
-				gSelfChkOK = 0;
-				gSelfChkMask = 0;
-				dly = 0;
-				stLinked = 0;
-				status = 0;
-			}
+			SelfChk_Proc(&gSelfChkMask);			// 信号图标红（未激活或链接不到接收机）：持续自检
+			if(gSelfChkMask != 0)
+				gSelfChkOK = 0;						// 有异常禁止激活（见 Activar）
+			else
+				gSelfChkOK = 1;
 			break;
 		default:
 			status = 0;

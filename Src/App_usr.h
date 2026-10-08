@@ -177,14 +177,13 @@ extern unsigned int gTXCANDly;			// can通信异常，MS
 extern unsigned char gChaoZOv ;
 
 extern unsigned int  gAISendFlg;		// 下发AI，上电后全部发送，设置时一直发送
-extern unsigned int  gWLSingV ;extern unsigned int  gWLMachSingV ;extern unsigned int  dead_zone ;
+extern unsigned int  gWLSingV ;extern unsigned int  dead_zone ;
 	   
 
 extern unsigned char gYKQ_WLStr[24];					// 遥控器的数据，发往 无线
 
 extern unsigned int  gWLRcvs ;
 extern unsigned int  gWLRcvOk ;
-extern unsigned int  gMachRcvOk ;
 extern unsigned int  gJTDly ;
 
 /************************************ 函数 *************************************************/

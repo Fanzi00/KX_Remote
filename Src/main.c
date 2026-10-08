@@ -152,7 +152,6 @@ unsigned char gAISendChk = 0;				// 发送的 AI 序号
 unsigned char gAISendOK = 0;				// 上电后是否发送完 AI
 unsigned int  gWLRcvs = 0;
 unsigned int  gWLRcvOk = 0;
-unsigned int  gMachRcvOk = 0;			// 收到整机反馈帧（0x380/0x480等）计数，T0S节拍快照到gWLMachSingV
 unsigned int  gJTDly = 0;
 
 int main( void )
@@ -301,8 +300,6 @@ int main( void )
 			gT0SFlg = 0;
 			gWLSingV = gWLRcvOk;
 			gWLRcvOk = 0;
-			gWLMachSingV = gMachRcvOk;	// 整机反馈帧计数快照，供自检状态机判定链接是否激活
-			gMachRcvOk = 0;
 			T0S_Prog();
 			if(gWLSingV == 0)
 				wl_reset();
