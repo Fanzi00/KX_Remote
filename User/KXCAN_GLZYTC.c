@@ -120,13 +120,14 @@ static void SelfChk_Proc(uint32_t* err_mask)
 }
 
 // 自检状态机，10ms 节拍：0=上电延时300ms → 1=自检循环 → 2=正常运行
-// 从未连接过：运行中持续自检，异常即时显示（约10ms检出，LCD刷新200ms内上屏）
-// 连接过又掉线：连续1.5秒无数据才重新自检（防单次丢帧误判），走0→1重检
+// 链接激活判定：持续收到整机反馈帧（gWLMachSingV>0）才算激活，接收机仅无线在线不算
+// 未激活（含接收机在线但整机未受控）：运行中持续自检，异常即时显示（约10ms检出，LCD刷新200ms内上屏）
+// 激活过又停发反馈：连续1.5秒防抖（防单次丢帧误判）后走0→1重新自检
 void SelfChk_main(void)
 {
 	static unsigned char status = 0;
 	static unsigned char dly = 0;
-	static unsigned char stLinked = 0;		// 本次开机是否连接过接收机
+	static unsigned char stLinked = 0;		// 本次开机链接是否激活过（收到整机反馈帧）
 
 	switch(status)
 	{
@@ -146,7 +147,7 @@ void SelfChk_main(void)
 			}
 			break;
 		case 2: // 正常运行
-			if(gWLSingV > 0)						// 在线
+			if(gWLMachSingV > 0)					// 链接已激活（收到整机反馈帧）：正常操控，不做自检
 			{
 				stLinked = 1;
 				dly = 0;
@@ -154,7 +155,7 @@ void SelfChk_main(void)
 					status = 1;
 				break;
 			}
-			if(stLinked == 0)						// 从未连接过：持续自检，按了立刻报、松开立刻消
+			if(stLinked == 0)						// 链接未激活过：持续自检（接收机在线但整机未受控也自检），按了立刻报、松开立刻消
 			{
 				SelfChk_Proc(&gSelfChkMask);
 				if(gSelfChkMask != 0)
@@ -162,7 +163,7 @@ void SelfChk_main(void)
 				else
 					gSelfChkOK = 1;
 			}
-			else if(++dly >= 150)					// 连接后掉线：10ms×150=连续1.5秒无数据
+			else if(++dly >= 150)					// 激活过又停发反馈：10ms×150=连续1.5秒防抖后重新自检
 			{
 				gSelfChkOK = 0;
 				gSelfChkMask = 0;

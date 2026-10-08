@@ -160,13 +160,15 @@ uchar Uart0_WL_Rcv(void)
 				//	gWarnFlg |= 1;
 			break;
 		case 2:					 	// 控制器的数据
+			gMachRcvOk++;				// 整机反馈帧（0x380类），链接激活判据
 			for(i=0; i<8; i++)
-				gRunInfo.vRcvWL[16 + i] = vUStr[i];   						// 20230210  
+				gRunInfo.vRcvWL[16 + i] = vUStr[i];   						// 20230210
 			break;
 
 		case 3: 					// 控制器的数据  0x380+ykqID
+			gMachRcvOk++;				// 整机反馈帧，链接激活判据
 			for(i=0; i<8; i++)
-				gRunInfo.vRcvWL[24 + i] = vUStr[i];   						// 20230210  
+				gRunInfo.vRcvWL[24 + i] = vUStr[i];   						// 20230210
 
 
 		vPageNum = vUStr[7] & 0xf0;
@@ -195,7 +197,8 @@ uchar Uart0_WL_Rcv(void)
 					gBDParam2[1].vAI[3][vCh] = vUStr[6] + ((vUStr[7]& 0x0f)<<8);
 			}
 			break;
-		case 4:	  					// 控制器的数据  0x480+ykqID		
+		case 4:	  					// 控制器的数据  0x480+ykqID
+			gMachRcvOk++;				// 整机反馈帧，链接激活判据
 			if(vPageNum <= 0x10)			// 电磁阀电流
 			{
 				vPageNum = vUStr[1] & 0xf0;

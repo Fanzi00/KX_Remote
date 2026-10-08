@@ -166,7 +166,7 @@ void SelfChk_main(void)
 			}
 			break;
 		case 2: // 正常运行
-			if(gWLSingV > 0)						// 在线
+			if(gWLSingV > 1)						// 在线
 			{
 				stLinked = 1;
 				dly = 0;
@@ -246,55 +246,55 @@ void display()
 	if(flag == 0)
 	{
 		LCD_Set_Color(COLOR_WHITE_, -1);
-		LCD_Disp_Txt(FONT_16, Vermid-32/2, margT, (uchar*)"左臂");// 第一行显示
-		LCD_Disp_Txt(FONT_16, margL, Title+high*0, (uchar*)"1#左距:");
-		LCD_Disp_Txt(FONT_16, margL, Title+high*1, (uchar*)"1#右距:");
-		LCD_Disp_Txt(FONT_16, margL, Title+high*2, (uchar*)"1#上距:");
-		LCD_Disp_Txt(FONT_16, margL, Title+high*3, (uchar*)"1#前距:");
+		LCD_Disp_Txt(FONT_32, Vermid-32*2/2, 104, (uchar*)"左臂");
+		// LCD_Disp_Txt(FONT_16, margL, Title+high*0, (uchar*)"1#左距:");
+		// LCD_Disp_Txt(FONT_16, margL, Title+high*1, (uchar*)"1#右距:");
+		// LCD_Disp_Txt(FONT_16, margL, Title+high*2, (uchar*)"1#上距:");
+		// LCD_Disp_Txt(FONT_16, margL, Title+high*3, (uchar*)"1#前距:");
 
-		LCD_Set_Color(COLOR_YELLW_, -1);
-		LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*0, KX_119_recv_dis.data[0].u16Data, 5);
-		LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*1, KX_119_recv_dis.data[1].u16Data, 5);
-		LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*2, KX_119_recv_dis.data[2].u16Data, 5);
-		LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*3, KX_119_recv_dis.data[3].u16Data, 5);
+		// LCD_Set_Color(COLOR_YELLW_, -1);
+		// LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*0, KX_119_recv_dis.data[0].u16Data, 5);
+		// LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*1, KX_119_recv_dis.data[1].u16Data, 5);
+		// LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*2, KX_119_recv_dis.data[2].u16Data, 5);
+		// LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*3, KX_119_recv_dis.data[3].u16Data, 5);
 	}
 	else if(flag == 1)
 	{
 		LCD_Set_Color(COLOR_WHITE_, -1);
-		LCD_Disp_Txt(FONT_16, Vermid-32/2, margT, (uchar*)"中臂");// 第一行显示
-		LCD_Disp_Txt(FONT_16, margL, Title+high*0, (uchar*)"2#左距:");
-		LCD_Disp_Txt(FONT_16, margL, Title+high*1, (uchar*)"2#右距:");
-		LCD_Disp_Txt(FONT_16, margL, Title+high*2, (uchar*)"2#上距:");
-		LCD_Disp_Txt(FONT_16, margL, Title+high*3, (uchar*)"2#前距:");
+		LCD_Disp_Txt(FONT_32, Vermid-32*2/2, 104, (uchar*)"中臂");
+		// LCD_Disp_Txt(FONT_16, margL, Title+high*0, (uchar*)"2#左距:");
+		// LCD_Disp_Txt(FONT_16, margL, Title+high*1, (uchar*)"2#右距:");
+		// LCD_Disp_Txt(FONT_16, margL, Title+high*2, (uchar*)"2#上距:");
+		// LCD_Disp_Txt(FONT_16, margL, Title+high*3, (uchar*)"2#前距:");
 
-		LCD_Set_Color(COLOR_YELLW_, -1);
-		LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*0, KX_119_recv_dis.data[4].u16Data, 5);
-		LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*1, KX_119_recv_dis.data[5].u16Data, 5);
-		LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*2, KX_119_recv_dis.data[6].u16Data, 5);
-		LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*3, KX_119_recv_dis.data[7].u16Data, 5);
+		// LCD_Set_Color(COLOR_YELLW_, -1);
+		// LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*0, KX_119_recv_dis.data[4].u16Data, 5);
+		// LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*1, KX_119_recv_dis.data[5].u16Data, 5);
+		// LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*2, KX_119_recv_dis.data[6].u16Data, 5);
+		// LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*3, KX_119_recv_dis.data[7].u16Data, 5);
 	}
 	else
 	{
 		LCD_Set_Color(COLOR_WHITE_, -1);
-		LCD_Disp_Txt(FONT_16, Vermid-32/2, margT, (uchar*)"右臂");// 第一行显示
-		LCD_Disp_Txt(FONT_16, margL, Title+high*0, (uchar*)"3#左距:");
-		LCD_Disp_Txt(FONT_16, margL, Title+high*1, (uchar*)"3#右距:");
-		LCD_Disp_Txt(FONT_16, margL, Title+high*2, (uchar*)"3#上距:");
-		LCD_Disp_Txt(FONT_16, margL, Title+high*3, (uchar*)"3#前距:");
+		LCD_Disp_Txt(FONT_32, Vermid-32*2/2, 104, (uchar*)"右臂");
+		// LCD_Disp_Txt(FONT_16, margL, Title+high*0, (uchar*)"3#左距:");
+		// LCD_Disp_Txt(FONT_16, margL, Title+high*1, (uchar*)"3#右距:");
+		// LCD_Disp_Txt(FONT_16, margL, Title+high*2, (uchar*)"3#上距:");
+		// LCD_Disp_Txt(FONT_16, margL, Title+high*3, (uchar*)"3#前距:");
 
-		LCD_Set_Color(COLOR_YELLW_, -1);
-		LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*0, KX_119_recv_dis.data[8].u16Data, 5);
-		LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*1, KX_119_recv_dis.data[9].u16Data, 5);
-		LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*2, KX_119_recv_dis.data[10].u16Data, 5);
-		LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*3, KX_119_recv_dis.data[11].u16Data, 5);
+		// LCD_Set_Color(COLOR_YELLW_, -1);
+		// LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*0, KX_119_recv_dis.data[8].u16Data, 5);
+		// LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*1, KX_119_recv_dis.data[9].u16Data, 5);
+		// LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*2, KX_119_recv_dis.data[10].u16Data, 5);
+		// LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*3, KX_119_recv_dis.data[11].u16Data, 5);
 	}
 
 	
-	LCD_Set_Color(COLOR_WHITE_, -1); // 字体 设置为白色
-	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*0, (uchar*)"mm");
-	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*1, (uchar*)"mm");
-	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*2, (uchar*)"mm");
-	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*3, (uchar*)"mm");
+	// LCD_Set_Color(COLOR_WHITE_, -1); // 字体 设置为白色
+	// LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*0, (uchar*)"mm");
+	// LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*1, (uchar*)"mm");
+	// LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*2, (uchar*)"mm");
+	// LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*3, (uchar*)"mm");
 }
 
 void selfDisplay(void)
@@ -315,7 +315,7 @@ void selfDisplay(void)
 // 主要逻辑
 void MainLogic(void)
 {
-	// display();
+	display();
 	selfDisplay();
 }
 

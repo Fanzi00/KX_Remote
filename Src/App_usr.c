@@ -25,6 +25,7 @@ uint32_t gArmOpFLg0 = 0;			// 摇杆动作的标记，1bit对应一个方向
  
 unsigned int  gAISendFlg = 0;	// 下发AI，上电后全部发送，设置时一直发送
 unsigned int  gWLSingV = 0;
+unsigned int  gWLMachSingV = 0;	// 每T0S节拍收到的整机反馈帧数，>0表示链接已激活
 unsigned int  dead_zone = 0;
 
 // 摇杆从左(J1) 到右(J8)对应的AD采样值存储位置
