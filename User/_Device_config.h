@@ -50,13 +50,14 @@ extern const KnobValCfg_t gKnobValTab[];
 /*******************USER_TYPE*******************/
 /*******************USER_TYPE*******************/
 
-#define USER_TYPE 			KX119_QLG0312A_L4X
+#define USER_TYPE Example
 
 /*******************USER_TYPE*******************/
 /*******************USER_TYPE*******************/
 
 // 示例
 #if (USER_TYPE == Example)
+#include "Example.h"
 
 #define SWI_ICON_EN 1 // 是否有扭子开关
 #define _XN_LiuL    0 // 是否有流量旋钮
@@ -66,6 +67,7 @@ extern const KnobValCfg_t gKnobValTab[];
 
 // 河南耿力 拱架台车 312E
 #if (USER_TYPE == KXCAN_GLGJT312E_L3X)
+#include "KXCAN_GLGJT312E.h"
 
 #define SWI_ICON_EN 1 // 是否有扭子开关
 #define _XN_LiuL    0 // 是否有流量旋钮
@@ -75,6 +77,7 @@ extern const KnobValCfg_t gKnobValTab[];
 
 // 河南耿力 装药台车
 #if (USER_TYPE == KXCAN_GLZYTC_L2X)
+#include "KXCAN_GLZYTC.h"
 
 // 纽子开关图标：数据表在本遥控器 KXCAN_GLZYTC.c 中（gSwiIconTab1/2）
 #define SWI_ICON_EN 1

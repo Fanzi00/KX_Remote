@@ -1,7 +1,7 @@
 #include "_Device_config.h"
 #include "App_usr.h"
 #if (USER_TYPE == KXCAN_GLZYTC_L2X)
-#include "KXCAN_GLZYTC.h"
+
 
 Activar_t F = {0};
 // 扭子开关图标配置表（App_lcd.c 的 Disp_Rock_Pic 遍历绘制）
@@ -37,7 +37,7 @@ KX119_Recv_t KX_119_recv_dis = {0};
 // 无线数据解析(接收机回传): 帧0~3=臂距数据
 // 无线数据解析(接收机回传): 帧0/5/6 = 臂距数据，3 帧共 12 个 uint16
 // 帧内不再放分组号，8 字节 = 4 个 uint16（小端），由帧类型决定是第几组
-void WL_Recv(unsigned char vGrp, const unsigned char* buf)
+void (unsigned char vGrp, const unsigned char* buf)
 {
 	// 收齐 3 组后立即刷屏，不等 200ms 定时刷新
 	static uint8_t stGrpGot = 0;

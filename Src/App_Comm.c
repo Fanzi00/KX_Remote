@@ -9,7 +9,6 @@
 #include "LPC17xx.h"
 #include "config.h"
 
-
 extern CAN_MSG MsgBuf_RX1[ID_RCV_NUM] ;
 
 
@@ -149,7 +148,7 @@ uchar Uart0_WL_Rcv(void)
 		case 5:					 	// 屏显B帧
 			WL_Recv(1, vUStr);
 			break;
-		case 6:					 	// 屏显C帧
+		case 7:					 	// 屏显C帧（Type6 已用于"设置AI的反馈"，见下，故屏显C帧改到 Type7）
 			WL_Recv(2, vUStr);
 			break;
 		case 1:					 	// 控制器的数据  0x280+ykqID	 DI/DO/WARN

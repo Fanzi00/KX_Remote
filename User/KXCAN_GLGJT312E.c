@@ -1,7 +1,7 @@
 #include "_Device_config.h"
 #include "App_usr.h"
 #if (USER_TYPE == KXCAN_GLGJT312E_L3X)
-#include "KXCAN_GLGJT312E.h"
+
 
 Activar_t F = {0};
 // 扭子开关图标配置表（App_lcd.c 的 Disp_Rock_Pic 遍历绘制）

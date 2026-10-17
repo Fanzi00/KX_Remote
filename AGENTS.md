@@ -77,9 +77,9 @@
 
 **方案：帧内不再放分组号，改由帧类型定位**
 - 12 个 uint16 = 24 字节 → 分 3 帧，每帧 8 字节 = 4 个 uint16（小端）。
-- 帧类型分配：**Type0 = 屏显A帧(data0~3)、Type5 = 屏显B帧(data4~7)、Type6 = 屏显C帧(data8~11)**；
-  Type1/2 保留给 0x280/0x380 数据，Type3/4 是电磁阀电流帧（特殊命令用），正常轮转跳过。
-- 轮转序列 `0,1,2,5,6`（`vCh==3||4 → 5`，`>=7 → 0`），100ms 轮询 → **每帧 500ms 刷新一次，且确定性命中**。
+- 帧类型分配：**Type0 = 屏显A帧(data0~3)、Type5 = 屏显B帧(data4~7)、Type7 = 屏显C帧(data8~11)**；
+  Type1/2 给 0x280/0x380 数据，Type3/4 是电磁阀电流帧（特殊命令用），Type6 为"设置AI反馈"（原有功能，保留、按需发送）；正常轮转跳过 3/4/6。
+- 轮转序列 `0,1,2,5,7`（`vCh==3||4 → 5`，`vCh==6 → 7`，`>=8 → 0`），100ms 轮询 → **每帧 500ms 刷新一次，且确定性命中**。
 - 接收机侧做成接口 `Dev_Disp_Frame(组号, 8字节缓冲)`（User 实现、Src 调用），
   不再用 `lcd_15D_*` 裸全局传递；发射机侧 `WL_Recv(组号, 8字节)` 同为接口，事件驱动调用。
 
@@ -92,21 +92,21 @@
 | `User/_Device_config.h` | 新增接口声明 `void Dev_Disp_Frame(unsigned char vGrp, unsigned char* pBuf8);` |
 | `User/KXCAN_GLZYTC.c`、`User/KXCAN_GLGJT312E_L3X.c` | 删除 `Dev_CAN_RX_DataHandle()`（index 轮播装帧），改为实现 `Dev_Disp_Frame()`；`Dev_main()` 里删掉该调用 |
 | `User/KXCAN_GLZYTC.h`、`User/KXCAN_GLGJT312E_L3X.h` | 声明由 `Dev_CAN_RX_DataHandle` 换成 `Dev_Disp_Frame` |
-| `Src/App_comm.c` `Uart0_WL_Send()` | case 0/5/6 改为 `Dev_Disp_Frame(0/1/2, &gWLSStr[i]); i += 8;`；`vCh` 轮转改为 `0,1,2,5,6`（跳过 3/4） |
+| `Src/App_comm.c` `Uart0_WL_Send()` | case 0/5/7 改为 `Dev_Disp_Frame(0/1/2, &gWLSStr[i]); i += 8;`；`vCh` 轮转改为 `0,1,2,5,7`（跳过 3/4/6，Type6 留给"设置AI反馈"） |
 
 发射机 `FSJ_666`：
 
 | 文件 | 改动 |
 | --- | --- |
 | `Src/App_usr.h` | 新增接口声明 `void WL_Recv(unsigned char vGrp, const unsigned char* pBuf8);` |
-| `Src/App_Comm.c` `Uart0_WL_Rcv()` | `case 0 → WL_Recv(0, vUStr)`；新增 `case 5 → WL_Recv(1, vUStr)`、`case 6 → WL_Recv(2, vUStr)` |
+| `Src/App_Comm.c` `Uart0_WL_Rcv()` | `case 0 → WL_Recv(0, vUStr)`；新增 `case 5 → WL_Recv(1, vUStr)`、`case 7 → WL_Recv(2, vUStr)`（原 `case 6` 是"设置AI的反馈"，保留不动） |
 | `Src/CanOpen.c` `app10ms()` | 删除 `WL_Recv();` 轮询调用（改为收到帧时事件驱动） |
 | `User/Example.c`、`User/KXCAN_GLGJT312E.c`、`User/KXCAN_GLZYTC.c` 及各自 .h | `WL_Recv()` 改为带参版本：按 `vGrp*4+i` 写 4 个 uint16；收齐 3 组置 `gDataFresh=1`、`gLCDFlg=1` 立即刷屏 |
 
 **注意 / 易踩的点**
 - **协议变更，新旧固件不能混装**：老发射机收到新帧会把"数据字节0"当成分组号，显示错位；
-  老接收机配新发射机则新发射机永远收不到 Type5/6。两边必须一起编、一起烧。
-- 后续扩展帧类型从 **Type 7 顺延**（0/5/6 已占，3/4 为电磁阀电流保留）。
+  老接收机配新发射机则新发射机永远收不到 Type5/7（屏显B/C帧）。两边必须一起编、一起烧。
+- 后续扩展帧类型从 **Type 8 顺延**（0/5/7 屏显三帧、1/2 数据、3/4 电磁阀电流、6 设置AI反馈，均已占）。
 - 原来 `lcd_15D_0~7` 已被 `Src/App_Can.c` 第 617 行（CAN `0x15d`）整体覆盖的隐患，
   因发送改走接口、不再读 `lcd_15D_*`，已自动消失；`App_Can.c` 那处可留着不动。
 - **还想更快**可调 `Src/timer.c` 的 `gWLCnt >= 100` 缩短轮询周期（成倍增加无线负载，需实测丢包）。
@@ -118,9 +118,21 @@
 现改为 **`#ifdef _SELF_CHK_EN`**：`User/_Device_config.h` 中各机型分支用 `#define _SELF_CHK_EN`
 （定义即开启，无需给值；需要关闭的机型 `#undef` 即可）控制，并删除了原先"必须给值"的默认块。
 
-## 4.（待确认）`User/Example.c` 未加入 Keil 工程
+## 4. `USER_TYPE` 必须与编译的机型 .c 匹配（否则链接报 undefined symbol）
 
-`HDH_YKQ_SPJ.uvprojx` 的 Device 组只包含 `KXCAN_GLGJT312E.c`、`KXCAN_GLZYTC.c`，
-但 `User/_Device_config.h` 里 `USER_TYPE` 目前定义为 `Example`，而 `Example.c` 不在工程中。
-该组合下 `MainLogic`/`WL_Recv`/`Activar`/`gSwiIconTab1` 等符号无定义，链接会失败。
-如需使用 `Example`，需把 `User\Example.c` 加入 uvprojx 的 Device 组。
+`uvprojx` 的 Device 组只包含 `KXCAN_GLGJT312E.c`、`KXCAN_GLZYTC.c`（不含 `Example.c`）。
+各机型 .c 里的 `WL_Recv`/`MainLogic`/`SelfChk_main`/`Activar`/`showWarn`/`clear_lcd`（发射机）
+以及 `Dev_Disp_Frame`/`Dev_main`/`error_prote`/`Dev_CAN_TX*`/`Dev_CAN_RX`（接收机）的实现
+都被 `#if (USER_TYPE == 机型)` 包裹：`USER_TYPE` 不对该机型时实现整体不进编译 -> 链接 `undefined`。
+
+- **编 Example（示例/通用）机型**：`USER_TYPE` 保持 `Example`，并需把 `User\Example.c`、`User\Example.h` 加入 eide 工程的 User 源文件组（原 uvprojx 的 Device 组未含 `Example.c`，导致实现不进编译、链接 `undefined`）。`Example.c` 内部实现已被 `#if (USER_TYPE == Example)` 包裹，加入后即可提供 `WL_Recv`/`Activar`/`MainLogic`/`SelfChk_main`/`gSwiIconTab1/2` 等全部符号。
+- 编其它机型（如 `KXCAN_GLGJT312E_L3X` 拱架台车、`KXCAN_GLZYTC_L2X` 装药台车）：把对应机型 `.c` 加入工程，并让 `USER_TYPE` 与之匹配（或改 `USER_TYPE` 指向该机型）。
+
+## 4b. 设备层（User）公共函数接口统一声明在 `User/_Device_config.h`
+
+为消除调用方（Src 层）缺声明导致的隐式声明/参数不匹配报错，两工程的 `User/_Device_config.h`
+各自集中声明了机型 .c 对外暴露的公共函数（不再分散在 `App_usr.h` 和各机型 `.h`）。
+`config.h` 已 `#include "_Device_config.h"`，所有 Src/User 文件自动可见。签名须与 .c 实现一致：
+- 发射机：`WL_Recv(unsigned char, const unsigned char*)`、`SelfChk_main(void)`、`MainLogic(void)`、`Activar(void)`、`showWarn(uint32_t)`、`clear_lcd(void)`。
+- 接收机：`Dev_Disp_Frame(uint8_t, uint8_t*)`、`Dev_main(void)`、`error_prote(void)`、`Dev_CAN_TX_DataHandle(void)`、`Dev_CAN_TX(void)`、`Dev_CAN_RX(void)`。
+（`App_usr.h` 与各机型 `.h` 里的同名声明保留，与之一致、无害；若要彻底清理可删除。）
