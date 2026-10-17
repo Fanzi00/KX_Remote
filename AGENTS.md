@@ -111,11 +111,12 @@
   因发送改走接口、不再读 `lcd_15D_*`，已自动消失；`App_Can.c` 那处可留着不动。
 - **还想更快**可调 `Src/timer.c` 的 `gWLCnt >= 100` 缩短轮询周期（成倍增加无线负载，需实测丢包）。
 
-## 3b. `User/_Device_config.h` 的 `_SELF_CHK_EN` 被写成空宏
+## 3b. `_SELF_CHK_EN` 用 `#ifdef` 控制（不要 `#if`）
 
-`_SELF_CHK_EN` 曾被写成 `#define _SELF_CHK_EN`（无值），`Src/main.c` 里是 `#if _SELF_CHK_EN`，
-空宏展开后 `#if` 没有表达式，编译报错。已全部改为 `#define _SELF_CHK_EN 1`，
-并在注释里注明"必须给值"。
+`Src/main.c` 里自检调用 `SelfChk_main()` 原用 `#if _SELF_CHK_EN` 判定。空宏（无值）展开后
+`#if` 没有表达式会编译报错，所以最初改成 `#define _SELF_CHK_EN 1` + `#if`。
+现改为 **`#ifdef _SELF_CHK_EN`**：`User/_Device_config.h` 中各机型分支用 `#define _SELF_CHK_EN`
+（定义即开启，无需给值；需要关闭的机型 `#undef` 即可）控制，并删除了原先"必须给值"的默认块。
 
 ## 4.（待确认）`User/Example.c` 未加入 Keil 工程
 

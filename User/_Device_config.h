@@ -35,24 +35,22 @@ extern const SwiIconCfg_t gSwiIconTab2[];
 extern const KnobValCfg_t gKnobValTab[];
 
 /*******************自检功能开关*******************/
-// 遥控器上电自检：1=开启自检  0=关闭自检
+// 遥控器上电自检：定义 _SELF_CHK_EN=开启，#undef(或不定义)=关闭
 // 开启：开机检测按键/手柄是否回位，异常时屏幕显示"自检异常:xxx"并禁止激活
 // 关闭：不做任何按键/手柄状态检测，不显示自检提示，按键可直接激活
-// 如需按机型单独配置，在下面对应 USER_TYPE 分支内 #undef _SELF_CHK_EN 后重新 #define
-// 注意：必须给值(0/1)。空的 `#define _SELF_CHK_EN` 在 `#if _SELF_CHK_EN` 处会展开成空表达式，编译报错
-#ifndef _SELF_CHK_EN
-#define _SELF_CHK_EN 1
-#endif
+// 自检功能开关：用 #ifdef 控制。需要开启的机型在下面 USER_TYPE 分支里 #define _SELF_CHK_EN；
+// 需要关闭的机型用 #undef _SELF_CHK_EN（或不在该分支定义）。无需给值。
 /*******************自检功能开关*******************/
 
 #define Example 0
 #define KXCAN_GLGJT312E_L3X 1
 #define KXCAN_GLZYTC_L2X 2
+#define KX119_QLG0312A_L4X 3
 
 /*******************USER_TYPE*******************/
 /*******************USER_TYPE*******************/
 
-#define USER_TYPE 			Example
+#define USER_TYPE 			KX119_QLG0312A_L4X
 
 /*******************USER_TYPE*******************/
 /*******************USER_TYPE*******************/
@@ -62,7 +60,7 @@ extern const KnobValCfg_t gKnobValTab[];
 
 #define SWI_ICON_EN 1 // 是否有扭子开关
 #define _XN_LiuL    0 // 是否有流量旋钮
-#define _SELF_CHK_EN 1  // 自检功能打开（必须给值，#if 才能判断）
+#define _SELF_CHK_EN  // 自检功能打开（定义即开启，由 #ifdef 控制）
 
 #endif // #if (USER_TYPE == Example)
 
@@ -71,7 +69,7 @@ extern const KnobValCfg_t gKnobValTab[];
 
 #define SWI_ICON_EN 1 // 是否有扭子开关
 #define _XN_LiuL    0 // 是否有流量旋钮
-#define _SELF_CHK_EN 1  // 自检功能打开（必须给值，#if 才能判断）
+#define _SELF_CHK_EN  // 自检功能打开（定义即开启，由 #ifdef 控制）
 
 #endif // #if (USER_TYPE == KXCAN_GLGJT312E_L3X)
 
@@ -81,9 +79,17 @@ extern const KnobValCfg_t gKnobValTab[];
 // 纽子开关图标：数据表在本遥控器 KXCAN_GLZYTC.c 中（gSwiIconTab1/2）
 #define SWI_ICON_EN 1
 #define _XN_LiuL    1 // 是否有流量旋钮
-#define _SELF_CHK_EN 1  // 自检功能打开（必须给值，#if 才能判断）
+#define _SELF_CHK_EN  // 自检功能打开（定义即开启，由 #ifdef 控制）
 
 #endif // #if (USER_TYPE == KXCAN_GLZYTC_L2X)
 
+// 中铁强力 立拱架台车 QLG0312A
+#if (USER_TYPE == KX119_QLG0312A_L4X)
+
+#define SWI_ICON_EN 1
+#define _XN_LiuL    1 // 是否有流量旋钮
+// #define _SELF_CHK_EN  // 自检功能打开（定义即开启，由 #ifdef 控制）
+
+#endif // #if (USER_TYPE == KX119_QLG0312A_L4X)
 
 #endif // #ifndef __DEVICE_CONFIG_H
