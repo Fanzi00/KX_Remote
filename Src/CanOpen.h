@@ -113,6 +113,7 @@ void Can_Send_Prog(void);
 void app10ms(void);
 
 void CAN_receive_data(void);
+unsigned char KX_JoyValue(unsigned char vCH);   // 取摇杆通道换算值0~255，已接入标定与死区
  void KX_Send_joysend(unsigned char vCH);   void  KX_Send_joylogic(unsigned char Y_Send_buf[] ,unsigned char vNO   ) ;
  void  KX_127_63(unsigned char Y_Send_buf[] ,unsigned char vNO   ) ;
 void Can_Prog_Send(unsigned char vFlag);

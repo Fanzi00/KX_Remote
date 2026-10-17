@@ -750,9 +750,10 @@ void app10ms(void)
 
 	}
 
-	WL_Recv();
-	
-	#if 0
+	// WL_Recv() 已改为事件驱动：在 App_Comm.c 收到回传帧(类型0/5/6)时按组号调用，
+	// 不再在这里每 10ms 轮询解析（旧写法要靠帧内分组号，分组号与发送节拍失配会漏组）
+
+#if 0
 					remote_18c.L1           =	 gRunInfo.vRcvWL[0] + yk1 ; 
 					remote_18c.L2           =	 gRunInfo.vRcvWL[1] + yk2 ; 
 					remote_18c.L3           =	 gRunInfo.vRcvWL[2] + yk3 ; 
@@ -1029,39 +1030,65 @@ void  KX_Send_joylogic(unsigned char Y_Send_buf[] ,unsigned char vNO   )	// 0 1
 *			
 * 出口参数：
 ******************************************************************/
-void KX_Send_joysend(unsigned char vCH)	// 0 1 
+// 取摇杆通道的换算值 0~255，已接入标定(vRockV)与中位死区(vRockDS)
+// 复用曲线全局工作区，不可从中断或并行任务调用；不提交保存，不写发送数组
+unsigned char KX_JoyValue(unsigned char vCH)
 {
-		 
-			 	if (ADCRst[gArmUpTab[vCH]]>100)
-				{
-				//	if (vCH==0)
-					{
-						  ArrayX[1][0] =  0xd35	;
-						  ArrayX[1][1] =  0xBCB	 ;
-						  ArrayX[1][2] =  0x7DC	  ;
-						  ArrayX[1][3] =  0x3F9	  ;
-						  ArrayX[1][4] =  0x1Fa	  ;		   						 
-							 	 
-						  ArrayY[1][0] =  0; 	 
-						  ArrayY[1][1] =  30;  	 
-						  ArrayY[1][2] =  127;  	 
-						  ArrayY[1][3] =  200; 	 
-						  ArrayY[1][4] =  255; 
-					  }
-			 
-						Curve_N(1 , ADCRst[gArmUpTab[vCH]]  , 0,5 ) ;		// 
-						if ( abs(ADCRst[gArmUpTab[vCH]] -0x7DC)<120 )  //中位误差处理。
-							  Y_Send[vCH] = _ARM_MIDVCan ;
-						else							   
-								Y_Send[vCH] = fOutput_Y ;
-					}
-					else
-					{
-						 	Y_Send[vCH] = _ARM_MIDVCan ;
-						
-					}
-			 
- 
+	unsigned char vDS;
+	unsigned short vDead;
+	float fXin, fRange;
+
+	if(vCH >= _ARM_USE)
+		return _ARM_MIDVCan;
+	if(ADCRst[gArmUpTab[vCH]] <= 100)
+		return _ARM_MIDVCan;
+
+	ArrayX[1][0] = gBDParam[0].vRockV[vCH*2+1][1];		// 高端
+	ArrayX[1][2] = gBDParam[0].vRockV[vCH*2][0];		// 低侧中位
+	ArrayX[1][4] = gBDParam[0].vRockV[vCH*2][1];		// 低端
+	if((ArrayX[1][4] <= 100) || (ArrayX[1][4] + 120 >= ArrayX[1][2]) ||
+	   (ArrayX[1][2] + 120 >= ArrayX[1][0]) || (ArrayX[1][0] >= 4090))
+	{
+		// 无有效标定时沿用原固定曲线。
+		ArrayX[1][0] = 0xd35;
+		ArrayX[1][2] = 0x7dc;
+		ArrayX[1][4] = 0x1fa;
+	}
+	if(ADCRst[gArmUpTab[vCH]] >= ArrayX[1][0])
+		return 0;
+	if(ADCRst[gArmUpTab[vCH]] <= ArrayX[1][4])
+		return 255;
+	// 沿用原死区比例，每侧行程的6%*(1+档位)，非法档位按2。
+	vDS = gBDParam[0].vRockDS[vCH];
+	if((vDS < 1) || (vDS > 9))
+		vDS = 2;
+	fXin = ADCRst[gArmUpTab[vCH]] - ArrayX[1][2];
+	fRange = fXin > 0 ? ArrayX[1][0] - ArrayX[1][2] : ArrayX[1][2] - ArrayX[1][4];
+	vDead = fRange * (0.06*(1+vDS));
+	if((fXin >= -vDead) && (fXin <= vDead))
+		return _ARM_MIDVCan;
+	// 扣除死区后按原五点曲线换算，越过死区时连续起步。
+	fXin = (fXin > 0 ? fXin - vDead : fXin + vDead) * fRange / (fRange - vDead) + ArrayX[1][2];
+	ArrayX[1][1] = ArrayX[1][2] + (ArrayX[1][0]-ArrayX[1][2]) * (0xbcb-0x7dc) / (0xd35-0x7dc);
+	ArrayX[1][3] = ArrayX[1][2] - (ArrayX[1][2]-ArrayX[1][4]) * (0x7dc-0x3f9) / (0x7dc-0x1fa);
+	ArrayY[1][0] = 0;
+	ArrayY[1][1] = 30;
+	ArrayY[1][2] = 127;
+	ArrayY[1][3] = 200;
+	ArrayY[1][4] = 255;
+	Curve_N(1, fXin, 0, 5);
+	if(fOutput_Y < 0)
+		fOutput_Y = 0;
+	if(fOutput_Y > 255)
+		fOutput_Y = 255;
+	return (unsigned char)fOutput_Y;
+}
+
+void KX_Send_joysend(unsigned char vCH)
+{
+	if(vCH >= _ARM_USE)
+		return;
+	Y_Send[vCH] = stStudyFlg ? _ARM_MIDVCan : KX_JoyValue(vCH);
 }
 /////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////

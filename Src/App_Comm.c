@@ -141,9 +141,16 @@ uchar Uart0_WL_Rcv(void)
 			gRcvVer[i] = vUStr[i];		i++;
 			gRcvVer[i] = 0;
 			break;
-		case 0:					 	// 控制器的数据
+		case 0:					 	// 屏显A帧：8字节=4个uint16
 			for(i=0; i<8; i++)
 				gRunInfo.vRcvWL[i] = vUStr[i];   						// 20230210  
+			WL_Recv(0, vUStr);
+			break;
+		case 5:					 	// 屏显B帧
+			WL_Recv(1, vUStr);
+			break;
+		case 6:					 	// 屏显C帧
+			WL_Recv(2, vUStr);
 			break;
 		case 1:					 	// 控制器的数据  0x280+ykqID	 DI/DO/WARN
 			for(i=0; i<8; i++)
@@ -395,7 +402,7 @@ void YKQ_Data_WL(unsigned char vFlg)
 {
 	unsigned char i = 0;
 //	unsigned char k = 0;
-		if(gJiTing || (gLaBaFlg==0))	  			// 急停		
+		if(gJiTing || stStudyFlg || (gLaBaFlg==0))	  			// 急停、学习中、未激活均输出中位
 		{			
 			gDIBitV = 0;
 			gDIxBitV = 0;

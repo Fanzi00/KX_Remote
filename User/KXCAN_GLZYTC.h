@@ -31,7 +31,7 @@ typedef struct KX119_Recv{
 
 extern KX119_Recv_t KX_119_recv_dis;
 
-void WL_Recv(void);
+void WL_Recv(unsigned char vGrp, const unsigned char* buf);
 uint8_t showWarn(uint32_t t);
 void clear_lcd(void);
 void MainLogic(void);

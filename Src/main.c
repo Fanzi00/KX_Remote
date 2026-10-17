@@ -317,7 +317,9 @@ int main( void )
 		//	Can_Prog_Send(0);			// 转换数据
 			app10ms_flags = 0;
 			app10ms() ;
+#if _SELF_CHK_EN			// 自检功能开关，见 User/_Device_config.h（必须用 #if，用 #ifdef 时置 0 也会编译进来）
 			SelfChk_main() ;
+#endif
 		}
 		if(gLCDFlg)
 		{

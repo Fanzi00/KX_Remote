@@ -12,8 +12,8 @@
 extern mOverInfo  gOverInfo;
 extern mOvHandInfo gOvHandInfo;
 
-uint32_t gSelfChkMask = 0;
-uint8_t gSelfChkOK = 0;
+uint32_t gSelfChkMask = 0;		// 自检异常掩码，0=无异常；自检关闭(_SELF_CHK_EN=0)时恒为0
+uint8_t gSelfChkOK = 1;			// 自检结果，1=通过；自检关闭时恒为通过
 
 mPswd  gPswd;
 mRunInfo gRunInfo;
@@ -102,130 +102,161 @@ void Cell_Chk(void)
 	 unsigned int stStudyFlg = 0;
 void Arm_Study(void)
 {
-	
-	unsigned char i = 0;
+	unsigned char i;
+	unsigned char vKey = (gDIBitV0 >> 16) & 0x0f;
+	static unsigned char stLastKey = 0;
 	unsigned short vDX = 90;
 	unsigned short vDY = 120;
-	
-	if(gKeyValue == 0)
-		stKeyCnt = 0;
-	if(gKeyValue == _F2F3)					// F2F3, 开启学习标定
-		stStudy ++;
-	if(stStudy <= 10)
-		return;
-	if(stStudy == 11)
+
+	if(stStudyFlg == 0)
 	{
-		stStudy ++;
-		stStudyFlg = 1;
-		stKeyCnt = 0;
-		gKeyValue = 0;
-		LCD_Disp_PIC(8);
-	}
-	if(gKeyValue == _F2)						// F2, 中位
-	{
-		stKeyCnt++;
-		if(stKeyCnt >= 3000/LCD_FRESH_MS)
+		if(vKey != _F2F3)
 		{
-			if(stKeyCnt == 3000/LCD_FRESH_MS)
-				LCD_Disp_Txt(FONT_12, vDX, vDY, "中位学习        ");
-			for(i=0; i<_ARM_USE; i++)
+			stStudy = 0;
+			return;
+		}
+		if(++stStudy < 3000/LCD_FRESH_MS)
+			return;
+		memcpy(&gBDParam[1], &gBDParam[0], sizeof(gBDParam[0]));
+		stStudyFlg = 1;                 // 位0:学习模式，位1:中位已学，位2:极限已开始
+		memset(Y_Send, _ARM_MIDVCan, _ARM_USE);
+		memset(VKC_Send, _ARM_MIDVCan, _ARM_USE);
+		stStudy = 0;
+		stKeyCnt = 0;
+		stLastKey = vKey;
+		gKeyValue = 0;
+		gArmDSSetFlg = 0;
+		LCD_Set_Cursor(0, 1, 1, 2, 2);
+		LCD_Disp_PIC(8);
+		return;
+	}
+	if(vKey != stLastKey)
+	{
+		stKeyCnt = 0;
+		stLastKey = vKey;
+	}
+	if(stKeyCnt <= 3000/LCD_FRESH_MS)
+		stKeyCnt++;
+
+	if((vKey == _F2) && (stKeyCnt == 3000/LCD_FRESH_MS))
+	{
+		for(i=0; i<_ARM_USE; i++)
+		{
+			if((ADCRst[gArmUpTab[i]] <= 100) || (ADCRst[gArmUpTab[i]] >= 4090) ||
+			   (ADCRst[gArmDownTab[i]] <= 100) || (ADCRst[gArmDownTab[i]] >= 4090))
 			{
-				gBDParam[0].vRockV[i*2][0] = ADCRst[gArmUpTab[i]];
-				gBDParam[0].vRockV[i*2+1][0] = ADCRst[gArmDownTab[i]];
+				LCD_Disp_Txt(FONT_12, vDX, vDY, "手柄采样异常    ");
+				return;
 			}
-		#if _V_2					// 新的版本，旋钮到最大，采样值最小 0
-			#if _XN_LiuL
+		}
+		for(i=0; i<_ARM_USE; i++)
+		{
+			gBDParam[1].vRockV[i*2][0] = ADCRst[gArmUpTab[i]];
+			gBDParam[1].vRockV[i*2+1][0] = ADCRst[gArmDownTab[i]];
+		}
+			#if _V_2					// 新的版本，旋钮到最大，采样值最小 0
+		#if _XN_LiuL
 				if(ADCRst[_XN1_AD_CHN] > 0x800)
 				{
-					gBDParam[0].vRockV[_XN1_RV_CHN][0] = ADCRst[_XN1_AD_CHN]-10;			// 旋钮的最小值
+					gBDParam[1].vRockV[_XN1_RV_CHN][0] = ADCRst[_XN1_AD_CHN]-10;			// 旋钮的最小值
 				}
-			#endif		
+		#endif		
 				if(ADCRst[_XN2_AD_CHN] > 0x800)
 				{
-					gBDParam[0].vRockV[_XN2_RV_CHN][0] = ADCRst[_XN2_AD_CHN]-10;			// 旋钮的最小值
+					gBDParam[1].vRockV[_XN2_RV_CHN][0] = ADCRst[_XN2_AD_CHN]-10;			// 旋钮的最小值
 					LCD_Disp_Txt(FONT_12, vDX, vDY, "中位学习完成    ");
 				//	LCD_Disp_Txt(FONT_16, 100, 150, "中位学习完成    ");
 				}
-		#else					// 旧的版本，旋钮到最大，采样值最大
+			#else					// 旧的版本，旋钮到最大，采样值最大
 				if(ADCRst[_XN1_AD_CHN] < 0x100)
 				{
-					gBDParam[0].vRockV[_XN1_RV_CHN][0] = ADCRst[_XN1_AD_CHN]+10;			// 旋钮的最小值
+					gBDParam[1].vRockV[_XN1_RV_CHN][0] = ADCRst[_XN1_AD_CHN]+10;			// 旋钮的最小值
 					LCD_Disp_Txt(FONT_12, vDX, vDY, "中位学习完成    ");
 				}
 				if(ADCRst[_XN2_AD_CHN] < 0x100)
 				{
-					gBDParam[0].vRockV[_XN2_RV_CHN][0] = ADCRst[_XN2_AD_CHN]+10;			// 旋钮的最小值
+					gBDParam[1].vRockV[_XN2_RV_CHN][0] = ADCRst[_XN2_AD_CHN]+10;			// 旋钮的最小值
 				//	LCD_Disp_Txt(FONT_16, 100, 150, "中位学习完成    ");
 				}
-		#endif
-		}
+			#endif
+		stStudyFlg |= 2;
+		LCD_Disp_Txt(FONT_12, vDX, vDY, "中位学习完成    ");
 	}
-	if(gKeyValue == _F3)						// F3, 最大 最小值学习，  上下， 左右
+	if((vKey == _F3) && (stKeyCnt >= 3000/LCD_FRESH_MS))
 	{
-		stKeyCnt++;
-		if(stKeyCnt >= 3000/LCD_FRESH_MS)
+		if((stStudyFlg & 4) == 0)
 		{
-			if(stKeyCnt == 3000/LCD_FRESH_MS)
-				LCD_Disp_Txt(FONT_12, vDX, vDY, "极限位学习      ");
+			// 本次极限采集从中位开始，允许重新学习更窄的行程。
 			for(i=0; i<_ARM_USE; i++)
 			{
-				if(ADCRst[gArmUpTab[i]] < gBDParam[0].vRockV[i*2][1])						// 上、左 小于中位值
-					gBDParam[0].vRockV[i*2][1] = ADCRst[gArmUpTab[i]];
-				if(ADCRst[gArmUpTab[i]] > gBDParam[0].vRockV[i*2+1][1])					// 下、右 大于中位值
-					gBDParam[0].vRockV[i*2+1][1] = ADCRst[gArmDownTab[i]];
+				gBDParam[1].vRockV[i*2][1] = gBDParam[1].vRockV[i*2][0];
+				gBDParam[1].vRockV[i*2+1][1] = gBDParam[1].vRockV[i*2+1][0];
 			}
+			stStudyFlg |= 4;
+		}
+		for(i=0; i<_ARM_USE; i++)
+		{
+			if((ADCRst[gArmUpTab[i]] > 100) &&
+			   (ADCRst[gArmUpTab[i]] < gBDParam[1].vRockV[i*2][1]))
+				gBDParam[1].vRockV[i*2][1] = ADCRst[gArmUpTab[i]];
+			if((ADCRst[gArmDownTab[i]] < 4090) &&
+			   (ADCRst[gArmDownTab[i]] > gBDParam[1].vRockV[i*2+1][1]))
+				gBDParam[1].vRockV[i*2+1][1] = ADCRst[gArmDownTab[i]];
+		}
 			#if _V_2					// 新的版本，旋钮到最大，采样值最小 0
 		#if _XN_LiuL
-				if(ADCRst[_XN1_AD_CHN] < gBDParam[0].vRockV[_XN1_RV_CHN][1])
+				if(ADCRst[_XN1_AD_CHN] < gBDParam[1].vRockV[_XN1_RV_CHN][1])
 				{
-					gBDParam[0].vRockV[_XN1_RV_CHN][1] = ADCRst[_XN1_AD_CHN]+10;			// 旋钮的最大值
+					gBDParam[1].vRockV[_XN1_RV_CHN][1] = ADCRst[_XN1_AD_CHN]+10;			// 旋钮的最大值
 				}
 		#endif		
-				if(ADCRst[_XN2_AD_CHN] < gBDParam[0].vRockV[_XN2_RV_CHN][1])
+				if(ADCRst[_XN2_AD_CHN] < gBDParam[1].vRockV[_XN2_RV_CHN][1])
 				{
-					gBDParam[0].vRockV[_XN2_RV_CHN][1] = ADCRst[_XN2_AD_CHN]+10;			// 旋钮的最大值
+					gBDParam[1].vRockV[_XN2_RV_CHN][1] = ADCRst[_XN2_AD_CHN]+10;			// 旋钮的最大值
 					LCD_Disp_Txt(FONT_12, vDX, vDY, "极限位学习中...");
 				//	LCD_Disp_Txt(FONT_16, 100, 150, "极限位学习中...");
 				}
 			#else					// 旧的版本，旋钮到最大，采样值最大
-				if(ADCRst[_XN1_AD_CHN] > gBDParam[0].vRockV[_XN1_RV_CHN][0]+0x800)
+				if(ADCRst[_XN1_AD_CHN] > gBDParam[1].vRockV[_XN1_RV_CHN][0]+0x800)
 				{
-					gBDParam[0].vRockV[_XN1_AD_CHN][1] = ADCRst[_XN1_AD_CHN]-10;			// 旋钮的最大值
+					gBDParam[1].vRockV[_XN1_AD_CHN][1] = ADCRst[_XN1_AD_CHN]-10;			// 旋钮的最大值
 					LCD_Disp_Txt(FONT_12, vDX, vDY, "极限位学习中...");
 				}
-				if(ADCRst[_XN2_AD_CHN] > gBDParam[0].vRockV[_XN2_RV_CHN][0]+0x800)
+				if(ADCRst[_XN2_AD_CHN] > gBDParam[1].vRockV[_XN2_RV_CHN][0]+0x800)
 				{
-					gBDParam[0].vRockV[_XN2_AD_CHN][1] = ADCRst[_XN2_AD_CHN]-10;			// 旋钮的最大值
+					gBDParam[1].vRockV[_XN2_AD_CHN][1] = ADCRst[_XN2_AD_CHN]-10;			// 旋钮的最大值
 				//	LCD_Disp_Txt(FONT_16, 100, 150, "极限位学习中...");
 				}
 			#endif
-		}
+		LCD_Disp_Txt(FONT_12, vDX, vDY, "极限位学习中... ");
 	}
-	if(gKeyValue == _F1)						// F1, 保存
+	if((vKey == _F1) && (stKeyCnt == 3000/LCD_FRESH_MS))
 	{
-		stKeyCnt++;
-		if(stKeyCnt >= 3000/LCD_FRESH_MS)
+		for(i=0; i<_ARM_USE; i++)
 		{
-			if(gSaveFlg == 0)
+			if((stStudyFlg == 1) || (gBDParam[1].vRockV[i*2][1] <= 100) ||
+			   (gBDParam[1].vRockV[i*2][1] + 120 >= gBDParam[1].vRockV[i*2][0]) ||
+			   (gBDParam[1].vRockV[i*2+1][0] + 120 >= gBDParam[1].vRockV[i*2+1][1]) ||
+			   (gBDParam[1].vRockV[i*2+1][1] >= 4090))
 			{
-				LCD_Disp_Txt(FONT_12, vDX, vDY, "保存参数完成    ");
-				gSaveFlg = 1;
-				Arm_RockX();
+				LCD_Disp_Txt(FONT_12, vDX, vDY, "未学习或参数无效");
+				return;
 			}
-			stStudy = 0;
 		}
+		memcpy(&gBDParam[0], &gBDParam[1], sizeof(gBDParam[0]));
+		Arm_RockX();
+		gSaveFlg = 1;
+		LCD_Disp_Txt(FONT_12, vDX, vDY, "参数已提交保存  ");
 	}
-	else if(gSaveFlg == 2)
-		gSaveFlg = 0;
-	if(gKeyValue == _F4)						// F4, 退出
+	if(vKey == _F4)
 	{
-			gKeyValue &= 0xf7;
-			gLcdFresh = 3;
-			gArmDSSetFlg = 0;
-			gSaveFlg = 1;
-		//if(stStudyFlg)
-			stStudyFlg = 0;
-			gp_lcdtask = Disp_mainSPJ;
+		gKeyValue = 0;
+		gLcdFresh = 3;
+		gArmDSSetFlg = 0;
+		stStudyFlg = 0;
+		stStudy = 0;
+		stKeyCnt = 0;
+		gp_lcdtask = Disp_mainSPJ;
 	}
 }
 

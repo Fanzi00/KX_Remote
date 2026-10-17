@@ -148,6 +148,11 @@ extern uint32_t gPowerChk;			// 上电检测结果，为0，OK，非0，摇杆或按键故障，所有
 extern	 unsigned int stStudyFlg ;
 extern uint32_t gSelfChkMask;		
 extern uint8_t gSelfChkOK;
+void SelfChk_main(void);			// 遥控器自检状态机，10ms 节拍，见 User/*.c
+
+// 接收机回传的屏显数据帧接口（User/*.c 实现，Src/App_Comm.c 收到帧时调用）
+// vGrp 0/1/2 对应无线帧类型 0/5/6；pBuf8 为该帧 8 字节 = 4 个 uint16（小端）
+void WL_Recv(unsigned char vGrp, const unsigned char* pBuf8);
 
 extern unsigned char gBDCmd ;
 extern unsigned char gBDCmdAck;

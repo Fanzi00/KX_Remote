@@ -396,7 +396,7 @@ void Key_MainZZT(void)
 		case _F2:
 			gKeyValue &= 0xfD;
 			break;
-		case _F3:
+		case _F3:							// 单 F3 不进状态页，保留原组合键 F1+F3 进入
 		//	gKeyValue &= 0xfb;
 	    	gLcdFresh = 1;
 		//	gp_lcdtask = Disp_ZZT_CtrlStatus;
@@ -478,6 +478,8 @@ void Key_ZZT_CtrlStatus(void)
 {
 	static unsigned char stRow = 0;			// 第几个摇杆
 	Arm_Study();
+	if(stStudyFlg || (gp_lcdtask != Disp_ZZT_CtrlStatus))		// 学习中或刚退出学习(F4)，不再走普通状态页按键
+		return;
 	if(gKeyValue == 0)
 		stCSKeyCnt = 0;
 	switch(gKeyValue)

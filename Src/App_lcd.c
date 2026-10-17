@@ -597,6 +597,17 @@ void Disp_ZZT_CtrlStatus(void)
 	unsigned short vDX = 120;
 	unsigned short vDY = 116;
 
+	if(stStudyFlg)									// 学习中：只刷新 8 轴数值，保留学习背景 PIC8 与提示
+	{
+		LCD_Set_Color(COLOR_WHITE_,-1);
+		LCD_Get_Color(0,6,6);
+		for(i=0; i<_ARM_USE; i++)
+			LCD_Disp_Intx(FONT_16, romArmValDisp[i][0], romArmValDisp[i][1], KX_JoyValue(i), 4);
+		if(gLCDBKOnFlg == 0)
+			Key_ZZT_CtrlStatus();
+		return;
+	}
+
 	if(gLcdFresh > 2)
 	{
 		gLcdFresh--;

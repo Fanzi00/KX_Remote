@@ -1,6 +1,8 @@
 #include "_Device_config.h"
 #include "App_usr.h"
 #if (USER_TYPE == KXCAN_GLZYTC_L2X)
+#include "KXCAN_GLZYTC.h"
+
 Activar_t F = {0};
 // 扭子开关图标配置表（App_lcd.c 的 Disp_Rock_Pic 遍历绘制）
 // 行格式: {是否显示, 屏幕X, 屏幕Y, 状态缓存组(1/2), gDIBitV移位数, 掩码, 映射方式}
@@ -33,17 +35,26 @@ const KnobValCfg_t gKnobValTab[] = {
 
 KX119_Recv_t KX_119_recv_dis = {0};
 // 无线数据解析(接收机回传): 帧0~3=臂距数据
-void WL_Recv(void)
+// 无线数据解析(接收机回传): 帧0/5/6 = 臂距数据，3 帧共 12 个 uint16
+// 帧内不再放分组号，8 字节 = 4 个 uint16（小端），由帧类型决定是第几组
+void WL_Recv(unsigned char vGrp, const unsigned char* buf)
 {
-	const uint16_t index = gRunInfo.vRcvWL[0] | (gRunInfo.vRcvWL[1] << 8);
-	const uint8_t* buf = gRunInfo.vRcvWL;
+	// 收齐 3 组后立即刷屏，不等 200ms 定时刷新
+	static uint8_t stGrpGot = 0;
+	uint8_t i;
 
-	if(index <= 3)
+	if(vGrp >= 3)
+		return;
+
+	for(i=0; i<4; i++)
+		KX_119_recv_dis.data[vGrp*4 + i].u16Data = buf[i*2] | (buf[i*2+1] << 8);
+
+	stGrpGot |= (uint8_t)(1u << vGrp);
+	if(stGrpGot == 0x07)			// 3 组都到齐
 	{
-		uint16_t* pData = &KX_119_recv_dis.data[index * 3].u16Data;
-		pData[0] = buf[2] | (buf[3] << 8);
-		pData[1] = buf[4] | (buf[5] << 8);
-		pData[2] = buf[6] | (buf[7] << 8);
+		stGrpGot = 0;
+		gDataFresh = 1;
+		gLCDFlg = 1;
 	}
 }
 
