@@ -1054,9 +1054,9 @@ unsigned char KX_JoyValue(unsigned char vCH)
 		ArrayX[1][2] = 0x7dc;
 		ArrayX[1][4] = 0x1fa;
 	}
-	if(ADCRst[gArmUpTab[vCH]] >= ArrayX[1][0])
+	if(ADCRst[gArmUpTab[vCH]] >= ArrayX[1][0] - 20)	// 高端留余量，推到顶稳定归 0
 		return 0;
-	if(ADCRst[gArmUpTab[vCH]] <= ArrayX[1][4])
+	if(ADCRst[gArmUpTab[vCH]] <= ArrayX[1][4] + 20)	// 低端留余量，推到底稳定归 255（自学习端点太贴采样，需留余量恢复满量程）
 		return 255;
 	// 沿用原死区比例，每侧行程的6%*(1+档位)，非法档位按2。
 	vDS = gBDParam[0].vRockDS[vCH];
@@ -1077,10 +1077,10 @@ unsigned char KX_JoyValue(unsigned char vCH)
 	ArrayY[1][3] = 200;
 	ArrayY[1][4] = 255;
 	Curve_N(1, fXin, 0, 5);
-	if(fOutput_Y < 0)
-		fOutput_Y = 0;
-	if(fOutput_Y > 255)
-		fOutput_Y = 255;
+	// 极限端连续化：自学习后推到底 ADC 常落在曲线末端(254.x)，为避免 255/254 抖动并恢复满量程，
+	// 把 [254,255] 钳到 255、[0,1) 钳到 0（未自学习时默认曲线端点更低，可直接硬 return 255）
+	if(fOutput_Y >= 254.5f) fOutput_Y = 255.0f;
+	else if(fOutput_Y < 0.5f)  fOutput_Y = 0.0f;
 	return (unsigned char)fOutput_Y;
 }
 
