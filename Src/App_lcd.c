@@ -373,13 +373,25 @@ if (remote_18c.message_8) {	 if (remote_18c.message_6){	LCD_Disp_Txt(FONT_16, 20
 
 // 纽子开关图标绘制（配置表在各遥控器 .c 中：gSwiIconTab1/2，见 _Device_config.h 的 SwiIconCfg_t）
 #if SWI_ICON_EN
-static unsigned char SwiIcon_Map(unsigned char v, unsigned char map)
+// 由 DI 值计算开关图标状态: 0=中(或无触发) 1=上/右 2=下/左
+// 两档: 单DI。自锁->上/下(无中); 自复位->触发/中
+// 三档: 两连续DI(shift,shift+1)。约定 shift=下/左, shift+1=上/右; 00=中 01=上 10=下 11=归中
+static unsigned char SwiIcon_State(unsigned long vDI, unsigned char shift, unsigned char gears, unsigned char lock)
 {
-	if(map == 1)	{ if(v == 1) return 2; if(v == 2) return 1; return v; }
-	if(map == 2)	return v + 1;					// 两档开关，图标占 1/2
-	if(map == 3)	return (v > 2) ? 0 : v;
-	if(map == 4)	{ if(v == 1) return 2; if(v == 2) return 1; return 0; }
-	return v;
+	if(gears >= 3)
+	{
+		unsigned char b0 = (vDI >> shift) & 1;
+		unsigned char b1 = (vDI >> (shift + 1)) & 1;
+		if(b0 && !b1)      return 2;
+		else if(!b0 && b1) return 1;
+		return 0;
+	}
+	{
+		unsigned char b = (vDI >> shift) & 1;
+		if(lock)
+			return b ? 2 : 1;   // 自锁: 触发=下 松开=上(无中态)
+		return b ? 2 : 0;       // 自复位: 触发=下 松开=中
+	}
 }
 
 // 遍历绘制一行图标表（表以 en==0xFF 结束）
@@ -392,11 +404,15 @@ static void Disp_SwiIconRow(const SwiIconCfg_t *pT, unsigned long vNow, unsigned
 		unsigned char vS, vS0;
 		if(pT[i].en == 0)
 			continue;
-		vS  = (vNow  >> pT[i].shift) & pT[i].mask;
-		vS0 = (vLast >> pT[i].shift) & pT[i].mask;
+		vS  = SwiIcon_State(vNow,  pT[i].shift, pT[i].gears, pT[i].lock);
+		vS0 = SwiIcon_State(vLast, pT[i].shift, pT[i].gears, pT[i].lock);
+		if(pT[i].map)   // 显示映射=1: 上/下反转(交换图标1/2, 中态0不变)
+		{
+			if(vS == 1) vS = 2; else if(vS == 2) vS = 1;
+			if(vS0 == 1) vS0 = 2; else if(vS0 == 2) vS0 = 1;
+		}
 		if((vS != vS0) || reFlg)
 		{
-			vS = SwiIcon_Map(vS, pT[i].map);
 			LCD_Cut_PICRect(0, vPicX, gLCD_IO_XY[vS][0], gLCD_IO_XY[vS][1],
 				gLCD_IO_XY[vS][2], gLCD_IO_XY[vS][3], pT[i].x, pT[i].y);
 		}

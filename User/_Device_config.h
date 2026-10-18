@@ -8,14 +8,15 @@
 #include "config.h"
 
 // 纽子开关图标配置表条目（数据表由各遥控器 .c 定义：gSwiIconTab1/第一排、gSwiIconTab2/第二排）
+// 注意: 第一排/第二排由调用处分别传入 stDIBitV1/stDIBitV2 作比较基准，故表内不再存 grp
 typedef struct {
     unsigned char  en;     // 1=显示 0=隐藏 0xFF=表结束标志
     unsigned short x;      // 屏幕X
     unsigned short y;      // 屏幕Y
-    unsigned char  grp;    // 状态缓存组: 1=与stDIBitV1比较 2=与stDIBitV2比较
-    unsigned char  shift;  // gDIBitV 右移位数
-    unsigned char  mask;   // 状态掩码
-    unsigned char  map;    // 图标映射: 0=直接索引 1=1/2互换(其余保持) 2=+1(两档) 3=>2归0 4=1/2互换(其余归0)
+    unsigned char  shift;  // gDIBitV 右移位数(该开关最低有效位)
+    unsigned char  gears;  // 几档开关: 2=两档(单DI, 上/下)  3=三档(两DI, 上/中/下)
+    unsigned char  lock;   // 是否自锁: 0=自复位 1=自锁(仅两档开关有意义, 三档忽略)
+    unsigned char  map;    // 显示映射: 0=正常 1=上/下反转(交换图标1/2, 中态0不变)
 } SwiIconCfg_t;
 
 // 流量旋钮"图标+数值"显示表条目（数据表由各遥控器 .c 定义：gKnobValTab，#if _XN_LiuL 时使用）
@@ -50,7 +51,7 @@ extern const KnobValCfg_t gKnobValTab[];
 /*******************USER_TYPE*******************/
 /*******************USER_TYPE*******************/
 
-#define USER_TYPE Example
+#define USER_TYPE		KX119_QLG0312A_L4X
 
 /*******************USER_TYPE*******************/
 /*******************USER_TYPE*******************/
@@ -88,10 +89,11 @@ extern const KnobValCfg_t gKnobValTab[];
 
 // 中铁强力 立拱架台车 QLG0312A
 #if (USER_TYPE == KX119_QLG0312A_L4X)
+#include "KX119_QLG0312A_L4X.h"
 
 #define SWI_ICON_EN 1
-#define _XN_LiuL    1 // 是否有流量旋钮
-// #define _SELF_CHK_EN  // 自检功能打开（定义即开启，由 #ifdef 控制）
+#define _XN_LiuL    0 // 是否有流量旋钮（QLG0312A 无流量旋钮，见协议文档）
+// #define _SELF_CHK_EN  // 自检功能关闭（QLG0312A 无自检功能，见协议文档）
 
 #endif // #if (USER_TYPE == KX119_QLG0312A_L4X)
 
