@@ -61,6 +61,7 @@ void WL_Recv(unsigned char vGrp, const unsigned char* buf)
 // 激活按钮设置
 void Activar()
 {
+	static unsigned int forceDly = 0;	// 强制激活长按计时(DI_Scan 1ms 节拍, 6000=6s)
 	// 8个侧边按钮和gDIBitV对应的位是固定不变的
 	F.F1 = _BitV(gDIBitV, 16);
 	F.F2 = _BitV(gDIBitV, 17);
@@ -70,11 +71,23 @@ void Activar()
 	F.F6 = _BitV(gDIBitV, 21);
 	F.F7 = _BitV(gDIBitV, 22);
 	F.F8 = _BitV(gDIBitV, 23);
-	// 只设置了F3-F8，其他按钮未设置
+	// 正常激活：F3~F8 任一按下且自检通过(gSelfChkMask==0)
 	if(F.F3 || F.F4 || F.F5 || F.F6 || F.F7 || F.F8)
 	{
 		if(gSelfChkMask == 0)		// 自检异常不允许激活（信号图标红期间持续自检）
 			gLaBaFlg = 1;
+	}
+
+	// 强制激活：F5~F8 任一长按 6 秒(1ms*6000)绕过自检，强制置激活位；松开即清零计时，须连续按住
+	if(F.F5 || F.F6 || F.F7 || F.F8)
+	{
+		if(forceDly < 6000) forceDly++;
+		if(forceDly >= 6000)
+			gLaBaFlg = 1;			// 强制激活，不判 gSelfChkMask
+	}
+	else
+	{
+		forceDly = 0;
 	}
 }
 

@@ -120,21 +120,21 @@ const char* SelfChk_Str(uint32_t mask)
     switch(mask)
     {
         case 0:     return "              ";
-        case 10:    return "水泵未关";
-        case 11:    return "搅拌未关";
-        case 12:    return "换钎未关";
-        case 13:    return "空压机未关";
-        case 14:    return "水阀未在中位";
-        case 15:    return "注浆未在中位";
-        case 16:    return "电机启停未复位";
-        case 17:    return "钻臂模式未复位";
-        case 18:    return "锚杆模式未复位";
-        case 19:    return "吊篮模式未复位";
-        case 20:    return "启动未复位";
-        case 30:    return "F5未复位";
-        case 31:    return "F6未复位";
-        case 32:    return "F7未复位";
-        case 33:    return "F8未复位";
+        case 10:    return "水泵未关        ";
+        case 11:    return "搅拌未关        ";
+        case 12:    return "换钎未关        ";
+        case 13:    return "空压机未关      ";
+        case 14:    return "水阀未在中位    ";
+        case 15:    return "注浆未在中位     ";
+        case 16:    return "电机启停未复位   ";
+        case 17:    return "钻臂模式未复位  ";
+        case 18:    return "锚杆模式未复位  ";
+        case 19:    return "吊篮模式未复位  ";
+        case 20:    return "启动未复位      ";
+        case 30:    return "F5未复位       ";
+        case 31:    return "F6未复位       ";
+        case 32:    return "F7未复位       ";
+        case 33:    return "F8未复位       ";
         case 34:    return "手柄1顶钮未复位";
 		case 35:    return "手柄2顶钮未复位";
 		case 36:    return "手柄3顶钮未复位";
@@ -144,7 +144,7 @@ const char* SelfChk_Str(uint32_t mask)
         case 53:    return "手柄2左右未回中";
         case 54:    return "手柄3上下未回中";
         case 55:    return "手柄3左右未回中";
-        default:    return "未知";
+        default:    return "未知          ";
     }
 }
 
@@ -172,10 +172,10 @@ static void SelfChk_Proc(uint32_t* err_mask)
     else if(_BitV(vDI, 18))                      *err_mask = 18;  // 锚杆模式未复位
     else if(_BitV(vDI, 19))                      *err_mask = 19;  // 吊篮模式未复位
     // 自复位按钮：安全态=复位(0)
-    else if(_BitV(vDI, 20))                      *err_mask = 30;  // F5
-    else if(_BitV(vDI, 21))                      *err_mask = 31;  // F6
-    else if(_BitV(vDI, 22))                      *err_mask = 32;  // F7
-    else if(_BitV(vDI, 23))                      *err_mask = 33;  // F8(打铃)
+    // else if(_BitV(vDI, 20))                      *err_mask = 30;  // F5
+    // else if(_BitV(vDI, 21))                      *err_mask = 31;  // F6
+    // else if(_BitV(vDI, 22))                      *err_mask = 32;  // F7
+    // else if(_BitV(vDI, 23))                      *err_mask = 33;  // F8(打铃)
 	else if(_BitV(vDI, 6))                       *err_mask = 34;  // 手柄1顶钮
     else if(_BitV(vDI, 30))                      *err_mask = 35;  // 手柄2顶钮(0x18A.3.6)
 	else if(_BitV(vDI, 7))                       *err_mask = 36;  // 手柄3顶钮

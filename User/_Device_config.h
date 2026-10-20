@@ -66,7 +66,7 @@ void ADC_Correction(void);
 /*******************USER_TYPE*******************/
 /*******************USER_TYPE*******************/
 
-#define USER_TYPE		KX119_GLMZ213_L3X
+#define USER_TYPE		KX119_GLMZ_L2X3J
 
 /*******************USER_TYPE*******************/
 /*******************USER_TYPE*******************/
@@ -118,7 +118,7 @@ void ADC_Correction(void);
 
 #define SWI_ICON_EN 1
 #define _XN_LiuL    0 // 是否有流量旋钮（GLMZ 无流量旋钮，见协议文档）
-// #define _SELF_CHK_EN  // 自检功能关闭（GLMZ 无自检功能，见协议文档）
+#define _SELF_CHK_EN  // 自检功能关闭
 
 #endif // #if (USER_TYPE == KX119_GLMZ_L2X3J)
 

@@ -153,6 +153,7 @@ unsigned char gAISendOK = 0;				// 上电后是否发送完 AI
 unsigned int  gWLRcvs = 0;
 unsigned int  gWLRcvOk = 0;
 unsigned int  gJTDly = 0;
+static unsigned char stWLHad = 0;		// 接收机上一秒是否在线(用于掉线边沿检测)
 
 int main( void )
 {
@@ -302,7 +303,18 @@ int main( void )
 			gWLRcvOk = 0;
 			T0S_Prog();
 			if(gWLSingV == 0)
+			{
 				wl_reset();
+				stWLHad = 0;		// 标记接收机离线
+			}
+			else
+			{
+				// 接收机本秒刚从离线变为在线(初次上电连接 或 掉线重连)：
+				// 清除激活态，禁止自动连接，须重新按激活键(或强制激活)才能恢复控制
+				if(stWLHad == 0)
+					gLaBaFlg = 0;
+				stWLHad = 1;		// 标记接收机在线
+			}
 		}
 		// 收到CAN数据
 		if( CAN1RxDone == TRUE )		 

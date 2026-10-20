@@ -206,3 +206,9 @@
 - 强制激活：本机型 `Activar` 目前**未实现**（仅有 F1~F4 正常激活，gSelfChkMask==0 门控）。213 的强制激活用 F5~F8 长按6s绕过自检，但 L2X3J 无 F5~F8（bit20~23 是模式开关），需等实机确认哪颗空闲侧边按钮(或组合)改派为强制激活按钮后再补 `forceDly` 逻辑（参考 §2.4）
 - 自检中"手柄使能"项：原 34/35(左手柄使能/右手柄使能) 与 50~53 手柄回中重复，已删除；若需在上电自检时检查手柄使能顶钮是否被按住，需另起错误码（区别于手柄回中）
 - L2X3J 的 `_SELF_CHK_EN` 在 `User/_Device_config.h` 当前被注释（自检功能关闭）；要启用上电自检，需去掉该行注释（当前 SelfChk 代码已就绪，但 dormant）
+
+## 7. RX drop must re-activate + force-activate for all TX (2026-10-20)
+- Bug: after RX drops and reconnects, TX auto-connects because gLaBaFlg was not cleared.
+- Fix: Src/main.c gT0SFlg block: whenever RX transitions offline->online (gWLSingV>0 while stWLHad was 0; covers both reconnect-after-drop AND RX powered-on later after TX already activated) clear gLaBaFlg=0; TX will NOT auto-connect, user must press activate key or force-activate. Online-only activation (RX already up when key pressed) is not disturbed.
+- Force-activate: added to all User/*.c Activar(): F5~F8 long-press 6s (forceDly counts to 6000, DI_Scan 1ms tick) sets gLaBaFlg=1 bypassing self-check. L2X3J has no F5~F8, uses F1~F4.
+- GLMZ213_L3X already had force-activate; GLZYTC/GLGJT312E/Example/QLG0312A/L2X3J added now.
