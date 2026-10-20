@@ -6,6 +6,9 @@
 #include "app_lcd.h"
 #include "LPC17xx.h"
 #include "config.h"
+// 发射机屏幕尺寸：320*240
+#define S_HEIGHT 240
+#define S_WIDTH 320
 
 // 纽子开关图标配置表条目（数据表由各遥控器 .c 定义：gSwiIconTab1/第一排、gSwiIconTab2/第二排）
 // 注意: 第一排/第二排由调用处分别传入 stDIBitV1/stDIBitV2 作比较基准，故表内不再存 grp
@@ -35,6 +38,16 @@ extern const SwiIconCfg_t gSwiIconTab1[];
 extern const SwiIconCfg_t gSwiIconTab2[];
 extern const KnobValCfg_t gKnobValTab[];
 
+void WL_Recv(unsigned char vGrp, const unsigned char* buf);
+uint8_t showWarn(uint32_t t);
+const char* SelfChk_Str(uint32_t mask);   // 自检异常描述（错误码见 SelfChk_Proc）
+void clear_lcd(void);
+void MainLogic(void);
+void SelfChk_main(void);    // 上电自检状态机：10ms 节拍(main.c)周期调用；按《213测试结果》逐项检查开关/手柄
+void Activar(void);
+void selfDisplay(void);
+void DI_Correction(void);
+void ADC_Correction(void);
 /*******************自检功能开关*******************/
 // 遥控器上电自检：定义 _SELF_CHK_EN=开启，#undef(或不定义)=关闭
 // 开启：开机检测按键/手柄是否回位，异常时屏幕显示"自检异常:xxx"并禁止激活
@@ -47,11 +60,13 @@ extern const KnobValCfg_t gKnobValTab[];
 #define KXCAN_GLGJT312E_L3X 1
 #define KXCAN_GLZYTC_L2X 2
 #define KX119_QLG0312A_L4X 3
+#define KX119_GLMZ_L2X3J 4
+#define KX119_GLMZ213_L3X 5
 
 /*******************USER_TYPE*******************/
 /*******************USER_TYPE*******************/
 
-#define USER_TYPE		KX119_QLG0312A_L4X
+#define USER_TYPE		KX119_GLMZ213_L3X
 
 /*******************USER_TYPE*******************/
 /*******************USER_TYPE*******************/
@@ -96,5 +111,25 @@ extern const KnobValCfg_t gKnobValTab[];
 // #define _SELF_CHK_EN  // 自检功能关闭（QLG0312A 无自检功能，见协议文档）
 
 #endif // #if (USER_TYPE == KX119_QLG0312A_L4X)
+
+// 耿力锚注（GMZ12I-X）
+#if (USER_TYPE == KX119_GLMZ_L2X3J)
+#include "KX119_GLMZ_L2X3J.h"
+
+#define SWI_ICON_EN 1
+#define _XN_LiuL    0 // 是否有流量旋钮（GLMZ 无流量旋钮，见协议文档）
+// #define _SELF_CHK_EN  // 自检功能关闭（GLMZ 无自检功能，见协议文档）
+
+#endif // #if (USER_TYPE == KX119_GLMZ_L2X3J)
+
+// 耿力锚注一体机
+#if (USER_TYPE == KX119_GLMZ213_L3X)
+#include "KX119_GLMZ213_L3X.h"
+
+#define SWI_ICON_EN 1
+#define _XN_LiuL    1 // 是否有旋钮
+#define _SELF_CHK_EN  // 开启自检功能
+
+#endif // #if (USER_TYPE == KX119_GLMZ213_L3X)
 
 #endif // #ifndef __DEVICE_CONFIG_H

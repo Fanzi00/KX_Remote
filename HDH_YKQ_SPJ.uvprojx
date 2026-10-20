@@ -521,6 +521,16 @@
               <FileType>1</FileType>
               <FilePath>.\User\KXCAN_GLZYTC.c</FilePath>
             </File>
+            <File>
+              <FileName>KX119_GLMZ_L2X3J.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\KX119_GLMZ_L2X3J.c</FilePath>
+            </File>
+            <File>
+              <FileName>KX119_GLMZ213_L3X.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\KX119_GLMZ213_L3X.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1043,6 +1053,16 @@
               <FileName>KXCAN_GLZYTC.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\User\KXCAN_GLZYTC.c</FilePath>
+            </File>
+            <File>
+              <FileName>KX119_GLMZ_L2X3J.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\KX119_GLMZ_L2X3J.c</FilePath>
+            </File>
+            <File>
+              <FileName>KX119_GLMZ213_L3X.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\KX119_GLMZ213_L3X.c</FilePath>
             </File>
           </Files>
         </Group>

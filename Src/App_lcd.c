@@ -587,6 +587,7 @@ static void Disp_KnobIcon(void)
 static void Disp_KnobValTab(void)
 {
 	unsigned char i;
+	ADC_Correction();
 	for(i = 0; gKnobValTab[i].en != 0xFF; i++)
 	{
 		if(gKnobValTab[i].en == 0)

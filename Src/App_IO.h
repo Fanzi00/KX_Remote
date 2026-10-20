@@ -13,7 +13,7 @@
 #include "gpio.h"
 
 
-#define  _BitV(	v, b)		(((v) & (1<<(b))) == (1<<(b))? 1:0)
+#define  _BitV(	v, b)		(((v) & (1U<<(b))) == (1U<<(b))? 1:0)
 #define  _BitVH(v, b)		(((v) & (b)) == (b)? 1:0)
 
 

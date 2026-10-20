@@ -307,6 +307,8 @@ void DI_Scan(void)
 	else
 		gDIBitV0 &= ~(1<<29);
 
+	DI_Correction(); // DIÐÞÕý
+
 	pGPIO = (GPIO_TypeDef *)((GPIO_BASE + 0x00020));
 	v = ((pGPIO->FIOPIN & (0x01 << _DI_JiT)) == (0x01 << _DI_JiT)? 1:0);
 	if(v == 0)

@@ -430,9 +430,12 @@ void YKQ_Data_WL(unsigned char vFlg)
 		}
 		else
 		{
+		#if (USER_TYPE != KX119_GLMZ213_L3X)
 			if(ADCRst[9] > 0xA85)
 				ADCRst[9] = 0xA85;
 			uint8_t temp = ADCRst[9] * 0x7F / 0xA85;
+		#endif
+		ADC_Correction();
 
 			gYKQ_WLStr[i++] = VKC_Send[0] ; // gADArmSend[0];
 			gYKQ_WLStr[i++] = VKC_Send[1] ; //gADArmSend[1];			// Arm1
@@ -442,14 +445,23 @@ void YKQ_Data_WL(unsigned char vFlg)
 			gYKQ_WLStr[i++] = VKC_Send[5] ;//gADArmSend[5];
 			gYKQ_WLStr[i++] = VKC_Send[6] ;//gADArmSend[6];
 			gYKQ_WLStr[i++] = VKC_Send[7] ;//gADArmSend[7];			// Arm 8
+#if (USER_TYPE == KX119_GLMZ_L2X3J)
+			gYKQ_WLStr[i++] = gLinR1Send ;//gADArmSend[8];	// ad1: 直线摇杆1(ADCRst[3]映射 0~255)
+			gYKQ_WLStr[i++] = gLinR3Send ;//gADArmSend[9];	// ad2: 直线摇杆3(ADCRst[9]映射 0~255)
+#else
 			gYKQ_WLStr[i++] = 0 ;//gADArmSend[8];			// ad1
 			gYKQ_WLStr[i++] = 0 ;//gADArmSend[9];			// ad2
+#endif
 			gYKQ_WLStr[i++] = 0 ;//gADArmSend[10];			// ad2	10
 			gYKQ_WLStr[i++] = gDIBitV;						// 两档妞子  1bit -- 1个开关，
 			gYKQ_WLStr[i++] = gDIBitV >> 8;
 			gYKQ_WLStr[i++] = gDIBitV >> 16;			
 			gYKQ_WLStr[i++] = gDIBitV >> 24;
+		#if (USER_TYPE == KX119_GLMZ213_L3X)
+			gYKQ_WLStr[i++] = ADCRst[9];
+		#else
 			gYKQ_WLStr[i++] = temp;						// 档位旋钮DI输入结果，4bit -- 1个开关
+		#endif
 			gYKQ_WLStr[i++] = 0;
 			gYKQ_WLStr[i++] = gModeSel | (gLaBaFlg<<5)  | (0x80*_ARM_4R_XY);//gDIxBitV >> 8;
 			gYKQ_WLStr[i++] = 0;
