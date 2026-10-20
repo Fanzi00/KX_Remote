@@ -98,6 +98,36 @@ void Activar()
     }
 }
 
+// 自检异常描述（错误码表与 SelfChk_Proc 一致：10~20 开关/模式，30~34 自复位按钮，50~56 手柄/直线摇杆）
+const char* SelfChk_Str(uint32_t mask)
+{
+    switch(mask)
+    {
+        case 0:     return "               ";
+        case 10:    return "水泵未关        ";
+        case 11:    return "空压机未关      ";
+        case 12:    return "换钎未关        ";
+        case 13:    return "搅拌未关        ";
+        case 14:    return "水阀未在中位    ";
+        case 15:    return "注浆未在中位    ";
+        case 16:    return "电机未复位      ";
+        case 17:    return "转臂模式未复位  ";
+        case 18:    return "锚杆模式未复位  ";
+        case 19:    return "吊篮模式未复位  ";
+        case 30:    return "F1未复位       ";
+        case 31:    return "F2未复位       ";
+        case 32:    return "F3未复位       ";
+        case 33:    return "F4未复位       ";
+        case 50:    return "左手柄上下未回中";
+        case 51:    return "左手柄左右未回中";
+        case 52:    return "右手柄上下未回中";
+        case 53:    return "右手柄左右未回中";
+        case 54:    return "直线摇杆1未回中 ";
+        case 55:    return "直线摇杆2未回中 ";
+        case 56:    return "直线摇杆3未回中 ";
+        default:    return "未知           ";
+    }
+}
 // DI 修正：当开关量记录的是模拟量/手柄顶钮时，在此映射到 gDIBitV（参考 213 的 DI_Correction）
 // App_IO.c 在 gDIBitV = gDIBitV0 ^ 0x8000 之前调用本函数
 void DI_Correction(void)
@@ -133,57 +163,20 @@ void DI_Correction(void)
 //     直线摇杆2 是摇杆轴(VKC_Send[5])，由 KX_Send_joylogic 正常处理。
 void ADC_Correction(void)
 {
-    // 直线摇杆1：模拟量 0x189.6&7 = ADCRst[3](16bit, 上极限0xE35/中位0x7EE/下极限0x1A0)
-    {
-        long v = (long)ADCRst[3] - 0x1A0;
-        if(v < 0)               v = 0;
-        if(v > (0xE35 - 0x1A0)) v = (0xE35 - 0x1A0);
-        gLinR1Send = (unsigned char)(v * 255 / (0xE35 - 0x1A0));
-    }
-
-    // 直线摇杆3：模拟量 0x18B.4&5 = ADCRst[9](16bit, 上极限0xE36/中位0x7F1/下极限0x1AB)
-    //   (本机型无旋钮, ADCRst[9] 不被用作档位旋钮; 213 才用它作旋钮)
-    //   注：该值走无线帧 ad2 槽 -> 接收机 vArm[8]，而接收机对 vArm[8] 不做 255->126 缩放(仅 vArm[0..7 缩放)，
-    //       故这里直接映射到协议 0x3A0 量程 0~126（中位63），与接收机非缩放读取一致；直线摇杆1/2 走缩放轴。
-    {
-        long v = (long)ADCRst[9] - 0x1AB;
-        if(v < 0)               v = 0;
-        if(v > (0xE36 - 0x1AB)) v = (0xE36 - 0x1AB);
-        gLinR3Send = (unsigned char)(v * 126 / (0xE36 - 0x1AB));
-    }
+	ADC_value[0] = Analog_Remap(&ADCRst[3], 0x1A0, 0x7EE, 0xE35, 10, 0, 0x7F, 255); // 直线手柄1
+	ADC_value[1] = Analog_Remap(&ADCRst[8], 0x1AB, 0x7EE, 0xE35, 10, 0, 0x7F, 255); // 首先手柄3
 }
-
-// 自检异常描述（错误码表与 SelfChk_Proc 一致：10~20 开关/模式，30~34 自复位按钮，50~56 手柄/直线摇杆）
-const char* SelfChk_Str(uint32_t mask)
+// 直线手柄值显示
+void Straight_handle()
 {
-    switch(mask)
-    {
-        case 0:     return "              ";
-        case 10:    return "水泵未关";
-        case 11:    return "空压机未关";
-        case 12:    return "换钎未关";
-        case 13:    return "搅拌未关";
-        case 14:    return "水阀未在中位";
-        case 15:    return "注浆未在中位";
-        case 16:    return "电机未复位";
-        case 17:    return "转臂模式未复位";
-        case 18:    return "锚杆模式未复位";
-        case 19:    return "吊篮模式未复位";
-        case 30:    return "F1未复位";
-        case 31:    return "F2未复位";
-        case 32:    return "F3未复位";
-        case 33:    return "F4未复位";
-        case 50:    return "左手柄上下未回中";
-        case 51:    return "左手柄左右未回中";
-        case 52:    return "右手柄上下未回中";
-        case 53:    return "右手柄左右未回中";
-        case 54:    return "直线摇杆1未回中";
-        case 55:    return "直线摇杆2未回中";
-        case 56:    return "直线摇杆3未回中";
-        default:    return "未知";
-    }
+	char str[8] = {0};
+	snprintf(str, sizeof(str), "%-3d", (ADC_value[0]+1) * 126 / 255);
+	LCD_Disp_Txt(FONT_16, 120, 140, str);
+	snprintf(str, sizeof(str), "%-3d", 126 - (VKC_Send[5]+1) * 126 / 255);
+	LCD_Disp_Txt(FONT_16, 150, 140, str);
+	snprintf(str, sizeof(str), "%-3d", (ADC_value[1]+1) * 126 / 255);
+	LCD_Disp_Txt(FONT_16, 180, 140, str);
 }
-
 // 逐项检查，首个异常写入 *err_mask（0=无异常）。位号以《KX119-GLMZ-L2X3J.md 测试》实测 gDIBitV 为准
 // 数据源用 gDIBitV0^0x8000（原始扫描值）：安全帧期间 gDIBitV 被清零，不能直接用
 static void SelfChk_Proc(uint32_t* err_mask)
@@ -208,19 +201,19 @@ static void SelfChk_Proc(uint32_t* err_mask)
     else if(_BitV(vDI, 22))                       *err_mask = 18;  // 锚杆模式未复位
     else if(_BitV(vDI, 23))                       *err_mask = 19;  // 吊篮模式未复位
     // 自复位按钮：安全态=复位(0)
-    else if(_BitV(vDI, 16))                       *err_mask = 30;  // F1
-    else if(_BitV(vDI, 17))                       *err_mask = 31;  // F2
-    else if(_BitV(vDI, 18))                       *err_mask = 32;  // F3
-    else if(_BitV(vDI, 19))                       *err_mask = 33;  // F4(打铃)
+    // else if(_BitV(vDI, 16))                       *err_mask = 30;  // F1
+    // else if(_BitV(vDI, 17))                       *err_mask = 31;  // F2
+    // else if(_BitV(vDI, 18))                       *err_mask = 32;  // F3
+    // else if(_BitV(vDI, 19))                       *err_mask = 33;  // F4(打铃)
     // 手柄/直线摇杆必须回中位(0x7F)：左手柄=VKC_Send[2,3]  右手柄=VKC_Send[6,7]  直线摇杆2=VKC_Send[5]
     // 直线摇杆1=ADCRst[3](0x189.6&7, 中位0x7EE)  直线摇杆3=ADCRst[9](0x18B.4&5, 中位0x7F1)（均为模拟量, 由 ADC_Correction 映射）
     else if(VKC_Send[2] != 0x7F)                  *err_mask = 50;  // 左手柄上下
     else if(VKC_Send[3] != 0x7F)                  *err_mask = 51;  // 左手柄左右
     else if(VKC_Send[6] != 0x7F)                  *err_mask = 52;  // 右手柄上下
     else if(VKC_Send[7] != 0x7F)                  *err_mask = 53;  // 右手柄左右
-    else if((long)ADCRst[3] < (0x7EE - 0x100) || (long)ADCRst[3] > (0x7EE + 0x100))  *err_mask = 54;  // 直线摇杆1未回中(ADCRst[3])
+    else if(ADC_value[0] != 0x7F)  				  *err_mask = 54;  // 直线摇杆1未回中(ADCRst[3])
     else if(VKC_Send[5] != 0x7F)                  *err_mask = 55;  // 直线摇杆2未回中
-    else if((long)ADCRst[9] < (0x7F1 - 0x100) || (long)ADCRst[9] > (0x7F1 + 0x100))  *err_mask = 56;  // 直线摇杆3未回中(ADCRst[9])
+    else if(ADC_value[1] != 0x7F)  				  *err_mask = 56;  // 直线摇杆3未回中(ADCRst[8])
 }
 
 // 自检状态机，10ms 节拍：0=上电延时300ms → 1=自检循环 → 2=正常运行

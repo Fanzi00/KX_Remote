@@ -583,17 +583,18 @@ static void Disp_KnobIcon(void)
 			LCD_Disp_Arc(1, gKnobValTab[i].arcX, gKnobValTab[i].arcY, 8, 80, 640);
 	}
 }
+uint8_t stKnob[4] = {0};
 // 数值，周期刷新调用（显示 ADCRst 原始采样值）
 static void Disp_KnobValTab(void)
 {
 	unsigned char i;
-	ADC_Correction();
 	for(i = 0; gKnobValTab[i].en != 0xFF; i++)
 	{
 		if(gKnobValTab[i].en == 0)
 			continue;
-		LCD_Disp_Intx(FONT_16, gKnobValTab[i].x, gKnobValTab[i].y, ADCRst[gKnobValTab[i].ch], gKnobValTab[i].digit);
+			LCD_Disp_Intx(FONT_16, gKnobValTab[i].x, gKnobValTab[i].y, stKnob[i], gKnobValTab[i].digit);
 	}
+
 }
 #endif
 // 显示遥控按键
@@ -673,6 +674,7 @@ void Disp_ZZT_CtrlStatus(void)
 			LCD_Disp_Txt(FONT_16, romArmValDisp[i][0], romArmValDisp[i][1], (unsigned char*)vStr);
 			LCD_Disp_Int(FONT_16, romArmDSDisp[i][0], romArmDSDisp[i][1], gBDParam[0].vRockDS[i]);
 		}
+		Straight_handle(); // 直线手柄
 		//if(gLCDPage.vPageX == 8)
 		{
 		#if _XN_LiuL

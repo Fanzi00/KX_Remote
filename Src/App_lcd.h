@@ -62,9 +62,7 @@ void Disp_Cmd8_SetI2(void);
 void Disp_Cmd8_SetI(void);
 void Disp_Cmd1_AITime(void);
 
-
-
-
+extern uint8_t stKnob[4]; // ÐýÅ¥ÖµÊý×é
 extern uchar   gPasswordIn[8];
 extern unsigned short gLcdFresh ;
 extern unsigned short gDataFresh;

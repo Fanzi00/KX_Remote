@@ -39,7 +39,7 @@ extern unsigned char gRcvVer[16];				// 接收机版本信息
 
 extern unsigned char  gWLRStr[64];
 extern unsigned char  gAISetAck ;				// 设置电流时反馈的标记，表示对方接收到了
-
+extern uint8_t ADC_value[5];
 /****************************************************************************************/
 
 void Can_Prog_Send(unsigned char vFlag);

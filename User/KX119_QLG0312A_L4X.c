@@ -26,7 +26,7 @@ const SwiIconCfg_t gSwiIconTab2[] = {	// 第二排纽子
 	{1, 245,170, 10, 3, 0, 0},   // 2.4 抓手伸缩 两档自复位(0x18A.1.2 抓臂缩; 触发=下 松开=中)
 	{0xFF}
 };
-// 无流量旋钮（_XN_LiuL=0）
+// 无旋钮（_XN_LiuL=0）
 const KnobValCfg_t gKnobValTab[] = {
 	{0, _XN1_AD_CHN,  54, 102+5, 4,  42, 102+12},		// 左旋钮 数值y=vDispLine1+5 圆弧y=vDispLine1+12
 	{0, _XN2_AD_CHN, 257, 102+5, 4, 246, 102+12},		// 右旋钮

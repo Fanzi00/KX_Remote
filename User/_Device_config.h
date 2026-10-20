@@ -6,6 +6,7 @@
 #include "app_lcd.h"
 #include "LPC17xx.h"
 #include "config.h"
+#include "Funtions.h"
 // 发射机屏幕尺寸：320*240
 #define S_HEIGHT 240
 #define S_WIDTH 320
@@ -48,6 +49,7 @@ void Activar(void);
 void selfDisplay(void);
 void DI_Correction(void);
 void ADC_Correction(void);
+void Straight_handle(void); // 直线手柄
 /*******************自检功能开关*******************/
 // 遥控器上电自检：定义 _SELF_CHK_EN=开启，#undef(或不定义)=关闭
 // 开启：开机检测按键/手柄是否回位，异常时屏幕显示"自检异常:xxx"并禁止激活

@@ -188,7 +188,7 @@ static void SelfChk_Proc(uint32_t* err_mask)
     else if(VKC_Send[7] != 0x7F)                  *err_mask = 55;  // 手柄3左右
 }
 // DI修正：当开关量对应模拟量时，在此修正
-void DI_Correction()
+void DI_Correction(void)
 {
 	if(ADCRst[16] > 500) // 修正DI9 空压机
 	{
@@ -230,8 +230,15 @@ void ADC_Correction()
 		ADCRst[9] = 0xA70;
 	else if(ADCRst[9] < 0x7)
 		ADCRst[9] = 0;
-	ADCRst[9] = ADCRst[9] * 0x7F / 0xA70;
+
+	// 一阶低通滤波(alpha=1/4)，平滑旋钮末位跳动；用16位缓存避免 *3 溢出
+	uint8_t raw = (uint8_t)(ADCRst[9] * 0x7F / 0xA70);
+	static uint16_t filt = 0;
+	filt = (filt * 3 + raw + 2) / 4;	// +2 四舍五入
+	ADC_value[3]    = (uint8_t)filt;
+	stKnob[1] = (uint8_t)filt;		// LCD 显示与发送同步平滑
 }
+
 // 自检状态机，10ms 节拍：0=上电延时300ms → 1=自检循环 → 2=正常运行
 // 以屏上信号图标为判据（图标红=未激活gLaBaFlg==0 或 无线信号gWLSingV<=1）：
 // 图标红：持续自检，按了立刻报、松开立刻消；自检异常则禁止激活（见 Activar）
