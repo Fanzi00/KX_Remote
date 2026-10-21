@@ -15,9 +15,8 @@
 // bit0~bit7 对应 8 路万向轴(gArmUpTab 索引 0~7)：1=参与自学习，0=跳过
 // 没接手柄/电位器的轴置 0，即不参与 F2中位/F3极限/F1校验，避免"手柄采样异常"卡住整个学习
 // 例：只学 0~3 轴 -> 0x0F；8 轴全学 -> 0xFF
-#ifndef _ARM_STUDY_MASK
-#define _ARM_STUDY_MASK 0xFF
-#endif
+// 说明：App_usr.h 有同名 #ifndef 兜底(供其它设备默认全学)；本设备头经 config.h 先被包含，故以这里为准
+#define _ARM_STUDY_MASK ((1<<2|1<<3|1<<5|1<<6|1<<7))
 
 typedef struct Activar
 {
