@@ -142,6 +142,8 @@ void Arm_Study(void)
 	{
 		for(i=0; i<_ARM_USE; i++)
 		{
+			if(!((_ARM_STUDY_MASK >> i) & 1))
+				continue;						// 该轴不参与自学习(未接手柄等)，跳过
 			if((ADCRst[gArmUpTab[i]] <= 100) || (ADCRst[gArmUpTab[i]] >= 4090) ||
 			   (ADCRst[gArmDownTab[i]] <= 100) || (ADCRst[gArmDownTab[i]] >= 4090))
 			{
@@ -151,6 +153,8 @@ void Arm_Study(void)
 		}
 		for(i=0; i<_ARM_USE; i++)
 		{
+			if(!((_ARM_STUDY_MASK >> i) & 1))
+				continue;
 			gBDParam[1].vRockV[i*2][0] = ADCRst[gArmUpTab[i]];
 			gBDParam[1].vRockV[i*2+1][0] = ADCRst[gArmDownTab[i]];
 		}
@@ -189,6 +193,8 @@ void Arm_Study(void)
 			// 本次极限采集从中位开始，允许重新学习更窄的行程。
 			for(i=0; i<_ARM_USE; i++)
 			{
+				if(!((_ARM_STUDY_MASK >> i) & 1))
+					continue;
 				gBDParam[1].vRockV[i*2][1] = gBDParam[1].vRockV[i*2][0];
 				gBDParam[1].vRockV[i*2+1][1] = gBDParam[1].vRockV[i*2+1][0];
 			}
@@ -196,6 +202,8 @@ void Arm_Study(void)
 		}
 		for(i=0; i<_ARM_USE; i++)
 		{
+			if(!((_ARM_STUDY_MASK >> i) & 1))
+				continue;
 			if((ADCRst[gArmUpTab[i]] > 100) &&
 			   (ADCRst[gArmUpTab[i]] < gBDParam[1].vRockV[i*2][1]))
 				gBDParam[1].vRockV[i*2][1] = ADCRst[gArmUpTab[i]];
@@ -234,6 +242,8 @@ void Arm_Study(void)
 	{
 		for(i=0; i<_ARM_USE; i++)
 		{
+			if(!((_ARM_STUDY_MASK >> i) & 1))
+				continue;
 			if((stStudyFlg == 1) || (gBDParam[1].vRockV[i*2][1] <= 100) ||
 			   (gBDParam[1].vRockV[i*2][1] + 120 >= gBDParam[1].vRockV[i*2][0]) ||
 			   (gBDParam[1].vRockV[i*2+1][0] + 120 >= gBDParam[1].vRockV[i*2+1][1]) ||

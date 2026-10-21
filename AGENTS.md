@@ -212,3 +212,17 @@
 - Fix: Src/main.c gT0SFlg block: whenever RX transitions offline->online (gWLSingV>0 while stWLHad was 0; covers both reconnect-after-drop AND RX powered-on later after TX already activated) clear gLaBaFlg=0; TX will NOT auto-connect, user must press activate key or force-activate. Online-only activation (RX already up when key pressed) is not disturbed.
 - Force-activate: added to all User/*.c Activar(): F5~F8 long-press 6s (forceDly counts to 6000, DI_Scan 1ms tick) sets gLaBaFlg=1 bypassing self-check. L2X3J has no F5~F8, uses F1~F4.
 - GLMZ213_L3X already had force-activate; GLZYTC/GLGJT312E/Example/QLG0312A/L2X3J added now.
+
+## 8. 自学习通道选择接口 `_ARM_STUDY_MASK`（2026-10-21, 所有遥控器通用）
+**需求**：F2 采中位原要求 8 路万向轴全部在 100~4090；没接手柄的通道读到 ≈0/≈4095 会触发"手柄采样异常"并在采集前 `return`，卡住整个自学习。需让每个遥控器可配置哪些通道参与自学习。模拟量今后都接 VKC_Send 的 8 个通道。
+
+**实现（按位掩码，配置集中在 `_Device_config.h` 各设备块）**
+- `Src/App_usr.c` `Arm_Study()`：F2 校验、F2 采集、F3 初始化、F3 跟踪、F1 校验 5 处万向轴循环均在循环体首加 `if(!((_ARM_STUDY_MASK >> i) & 1)) continue;`。掩码外的轴：不校验、不采集(保留进入学习时从 [0] memcpy 来的默认/旧值)、F1 不校验；F1 提交 `memcpy` 原样带回。
+- `User/_Device_config.h`：每个 `#if (USER_TYPE == …)` 设备块内 `#include "X.h"` 之后加 `#define _ARM_STUDY_MASK <值>`；文件末尾加 `#ifndef _ARM_STUDY_MASK / #define 0xFF / #endif` 兜底。bit0~bit7 = 万向轴 i = `VKC_Send[i]`（经 `KX_Send_joysend→KX_Send_joylogic` 下标不变，joylogic 只把每对里动得少的轴置中位、不重排下标），1=学/0=跳。
+- 各机默认：`KX119_GLMZ_L2X3J` = `((1<<2)|(1<<3)|(1<<6)|(1<<7))`（0xCC，实测 2 万向=主/副操作杆轴 2/3/6/7）；其余 Example/GLGJT312E/GLZYTC/QLG0312A/GLMZ213 = 0xFF（全学）。
+
+**为什么不放设备头 / App_usr.h**：`config.h` 会在 `_Device_config.h` 包含设备头之前就拉入 `App_usr.h`，若在 `App_usr.h` 或设备头里定义掩码，会被 armcc 判 47-D“incompatible redefinition”。集中在 `_Device_config.h` 设备块（单一定义）+ 末尾 `#ifndef` 兜底最稳。
+
+**注意 / 副作用**
+- 发射通路(KX_Send_joysend/KX_Send_joylogic)仍按全部 _ARM_USE=8 轴运行，`_ARM_STUDY_MASK` 只影响自学习校验/采集范围，不改变发射轴数；未接轴的发射值由各自默认/旧标定决定。
+- bit i ? `VKC_Send[i]` ? 万向轴 i ? `ADCRst[gArmUpTab[i]]`（gArmUpTab 随机型分支不同：KX 分支 ={10,6,15,7,12,13,0,5}）。

@@ -67,7 +67,7 @@ void Straight_handle(void); // 直线手柄
 /*******************USER_TYPE*******************/
 /*******************USER_TYPE*******************/
 
-#define USER_TYPE		Example
+#define USER_TYPE		KX119_GLMZ_L2X3J
 
 /*******************USER_TYPE*******************/
 /*******************USER_TYPE*******************/
@@ -75,6 +75,8 @@ void Straight_handle(void); // 直线手柄
 // 示例
 #if (USER_TYPE == Example)
 #include "Example.h"
+
+#define _ARM_STUDY_MASK 0xFF // 自学习通道选择：bit0~7=万向轴(=VKC_Send同下标)，1=学/0=跳(未接手柄置0)
 
 #define SWI_ICON_EN 1 // 是否有扭子开关
 #define _XN_LiuL    0 // 是否有流量旋钮
@@ -86,6 +88,8 @@ void Straight_handle(void); // 直线手柄
 #if (USER_TYPE == KXCAN_GLGJT312E_L3X)
 #include "KXCAN_GLGJT312E.h"
 
+#define _ARM_STUDY_MASK (1<<2|1<<3|1<<4|1<<5|1<<6|1<<7) // 自学习通道选择：bit0~7=万向轴(=VKC_Send同下标)，1=学/0=跳(未接手柄置0)
+
 #define SWI_ICON_EN 1 // 是否有扭子开关
 #define _XN_LiuL    0 // 是否有流量旋钮
 #define _SELF_CHK_EN  // 自检功能打开（定义即开启，由 #ifdef 控制）
@@ -95,6 +99,8 @@ void Straight_handle(void); // 直线手柄
 // 河南耿力 装药台车
 #if (USER_TYPE == KXCAN_GLZYTC_L2X)
 #include "KXCAN_GLZYTC.h"
+
+#define _ARM_STUDY_MASK (1<<3|1<<4|1<<5|1<<6) // 自学习通道选择：bit0~7=万向轴(=VKC_Send同下标)，1=学/0=跳(未接手柄置0)
 
 // 纽子开关图标：数据表在本遥控器 KXCAN_GLZYTC.c 中（gSwiIconTab1/2）
 #define SWI_ICON_EN 1
@@ -107,6 +113,8 @@ void Straight_handle(void); // 直线手柄
 #if (USER_TYPE == KX119_QLG0312A_L4X)
 #include "KX119_QLG0312A_L4X.h"
 
+#define _ARM_STUDY_MASK 0xFF // 自学习通道选择：bit0~7=万向轴(=VKC_Send同下标)，1=学/0=跳(未接手柄置0)
+
 #define SWI_ICON_EN 1
 #define _XN_LiuL    0 // 是否有流量旋钮（QLG0312A 无流量旋钮，见协议文档）
 // #define _SELF_CHK_EN  // 自检功能关闭（QLG0312A 无自检功能，见协议文档）
@@ -116,6 +124,8 @@ void Straight_handle(void); // 直线手柄
 // 耿力锚注（GMZ12I-X）
 #if (USER_TYPE == KX119_GLMZ_L2X3J)
 #include "KX119_GLMZ_L2X3J.h"
+
+#define _ARM_STUDY_MASK ((1<<2)|(1<<3)|(1<<6)|(1<<7)) // 自学习通道选择：bit0~7=万向轴(=VKC_Send同下标)，1=学/0=跳；本机2万向=轴2/3/6/7 -> 0xCC
 
 #define SWI_ICON_EN 1
 #define _XN_LiuL    0 // 是否有流量旋钮（GLMZ 无流量旋钮，见协议文档）
@@ -127,10 +137,17 @@ void Straight_handle(void); // 直线手柄
 #if (USER_TYPE == KX119_GLMZ213_L3X)
 #include "KX119_GLMZ213_L3X.h"
 
+#define _ARM_STUDY_MASK ((1<<2)|(1<<3)|(1<<4)|(1<<5)|(1<<6)|(1<<7)) // 自学习通道选择：bit0~7=万向轴(=VKC_Send同下标)，1=学/0=跳(未接手柄置0)
+
 #define SWI_ICON_EN 1
 #define _XN_LiuL    1 // 是否有旋钮
 #define _SELF_CHK_EN  // 开启自检功能
 
 #endif // #if (USER_TYPE == KX119_GLMZ213_L3X)
+
+// 自学习通道选择默认值(上面各设备块未配置时)：全学
+#ifndef _ARM_STUDY_MASK
+#define _ARM_STUDY_MASK 0xFF
+#endif
 
 #endif // #ifndef __DEVICE_CONFIG_H
