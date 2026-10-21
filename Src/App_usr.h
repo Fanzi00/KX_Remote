@@ -47,6 +47,12 @@
 // 死区设置可选项数：模拟通道(_ARM_USE) + 直线摇杆1/3 两项
 #define _ARM_DS_TOTAL	(_ARM_USE + 2)
 
+// 自学习通道选择：bit0~bit(_ARM_USE-1) 对应各万向轴，1=参与自学习，0=跳过(如该轴未接手柄)
+// 默认全参与；设备可在其头文件(如 KX119_GLMZ_L2X3J.h)覆盖，排除未接通道、避免"手柄采样异常"卡住学习
+#ifndef _ARM_STUDY_MASK
+	#define _ARM_STUDY_MASK	0xFF
+#endif
+
 #define  _YKQ_TYPE		"XT3:3.2GD "					// D--DO, F--DFS, H--HAW
 
 

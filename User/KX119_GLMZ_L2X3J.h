@@ -11,6 +11,14 @@
 #define _STR_RK1_RVIDX  8   // 直线摇杆1 在 vRockV 的通道索引(复用槽 16/17)
 #define _STR_RK3_RVIDX  9   // 直线摇杆3 在 vRockV 的通道索引(复用槽 18/19)
 
+// ===== 自学习通道选择（按硬件实际接线修改这里）=====
+// bit0~bit7 对应 8 路万向轴(gArmUpTab 索引 0~7)：1=参与自学习，0=跳过
+// 没接手柄/电位器的轴置 0，即不参与 F2中位/F3极限/F1校验，避免"手柄采样异常"卡住整个学习
+// 例：只学 0~3 轴 -> 0x0F；8 轴全学 -> 0xFF
+#ifndef _ARM_STUDY_MASK
+#define _ARM_STUDY_MASK 0xFF
+#endif
+
 typedef struct Activar
 {
     uint8_t F1 : 1;
