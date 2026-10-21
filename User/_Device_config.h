@@ -27,7 +27,6 @@ typedef struct {
 // 圆弧与数值绑定显示，en 同时控制两者；显示值 = ADCRst[ch] 原始采样值(12位 0~0xFFF)
 typedef struct {
     unsigned char  en;      // 1=显示(圆弧+数值) 0=隐藏 0xFF=表结束标志
-    unsigned char  ch;      // ADCRst AD通道索引(如 _XN1_AD_CHN/_XN2_AD_CHN)
     unsigned short x;       // 数值屏幕X
     unsigned short y;       // 数值屏幕Y
     unsigned char  digit;   // 数值显示位数
@@ -68,7 +67,7 @@ void Straight_handle(void); // 直线手柄
 /*******************USER_TYPE*******************/
 /*******************USER_TYPE*******************/
 
-#define USER_TYPE		KX119_GLMZ213_L3X
+#define USER_TYPE		Example
 
 /*******************USER_TYPE*******************/
 /*******************USER_TYPE*******************/

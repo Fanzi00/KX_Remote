@@ -4,33 +4,34 @@
 #if (USER_TYPE == Example)
 
 Activar_t F = {0};
-// 扭子开关图标配置表（App_lcd.c 的 Disp_Rock_Pic 遍历绘制）
+// 扭子开关图标配置表（App_lcd.c 的 Disp_SwiIconRow 遍历绘制）
 // 行格式: {是否显示, 屏幕X, 屏幕Y, gDIBitV移位数, 几档开关(2/3), 是否自锁(0/1), 显示映射(0/1)}
 // 两档自锁: 图标仅上/下; 两档自复位: 触发/中; 三档: 上/中/下(自锁自复位同)
 // map=1: 上/下反转(交换图标1/2, 中态0不变) —— 实际显示与逻辑相反时置1
-// 注: 原 grp(状态缓存组)字段在新模型中未使用(两表均读 gDIBitV)，已弃用; 原 mask/映射方式已折算为 gears/lock/map
+// shift 对应 gDIBitV 位号（与接收机 FSJ_DI 位布局一致：见接收机 .c 注释）
+// gDIBitV 位号(=接收机 FSJ_DI 位号, 依据《213遥控器测试结果》实测 gDIBitV 布局)：
 // 增删图标: 增删一行；不显示把"是否显示"改为 0；末行 {0xFF} 为表结束标志，勿删
 const SwiIconCfg_t gSwiIconTab1[] = {	// 第一排纽子
-	{1, 45, 132, 6,  3, 0, 0},
-	{1, 85, 132, 1,  2, 1, 0},   // 两档自锁(原映射+1)
-	{1, 205,132, 8,  3, 0, 1},   // 三档, map反转
-	{1, 245,132, 24, 2, 1, 0},   // 两档自锁(原映射+1)
+	{1, 45, 132, 0,  2, 1, 0},   // 1.1 水泵 两档自锁 (bit0: 关=1, 开=0)
+	{1, 85, 132, 4,  3, 0, 1},   // 1.2 水阀 三档自复位 (bit4=开, bit5=关, 中位两bit均0)
+	{0, 205,132, 0,  2, 0, 0},   // 1.3 无扭子开关(隐藏)
+	{1, 245,132, 15, 2, 1, 1},   // 1.4 换钎 两档自锁 (bit15: 开=1, 关=0)
 	{0xFF}
 };
 const SwiIconCfg_t gSwiIconTab2[] = {	// 第二排纽子
-	{0, 45, 170, 4,  3, 0, 0},
-	{0, 85, 170, 6,  3, 0, 0},
-	{0, 205,170, 12, 3, 0, 0},
-	{0, 245,170, 28, 3, 0, 0},
+	{1, 45, 170, 2,  3, 1, 1},   // 2.1 注浆 三档自锁 (bit2=正, bit3=反, 中位两bit均0)
+	{1, 85, 170, 1,  2, 1, 0},   // 2.2 搅拌 两档自锁 (bit1: 关=1, 开=0)
+	{0, 205,170, 0,  2, 0, 0},   // 2.3 无扭子开关(隐藏)
+	{1, 245,170, 29, 2, 1, 1},   // 2.4 空压机 两档自锁 (bit28/29: 开=1, 关=0)
 	{0xFF}
 };
 // 流量旋钮"图标+数值"显示表（App_lcd.c 的 Disp_ZZT_CtrlStatus 遍历绘制，#if _XN_LiuL 时生效）
-// 行格式: {显示, ADCRst的AD通道, 数值X, 数值Y, 显示位数, 圆弧X, 圆弧Y}
-// 圆弧和数值绑定：显示=1两者都画，=0都不画；显示的是AD原始采样值(0~4095)
+// 行格式: {显示, 数值X, 数值Y, 显示位数, 圆弧X, 圆弧Y}
+// 圆弧和数值绑定：显示=1两者都画，=0都不画；显示值由 Disp_KnobValTab 取 stKnob[i]
 // 末行 {0xFF} 为表结束标志，勿删
 const KnobValCfg_t gKnobValTab[] = {
-	{0, _XN1_AD_CHN,  54, 102+5, 4,  42, 102+12},		// 左旋钮 数值y=vDispLine1+5 圆弧y=vDispLine1+12
-	{0, _XN2_AD_CHN, 257, 102+5, 4, 246, 102+12},		// 右旋钮
+	{0,  54, 102+5, 4,  42, 102+12},		// 左旋钮 数值y=vDispLine1+5 圆弧y=vDispLine1+12
+	{0, 257, 102+5, 4, 246, 102+12},		// 右旋钮
 	{0xFF}
 };
 
@@ -72,7 +73,7 @@ void Activar()
 	F.F7 = _BitV(gDIBitV, 22);
 	F.F8 = _BitV(gDIBitV, 23);
 	// 正常激活：F3~F8 任一按下且自检通过(gSelfChkMask==0)
-	if(F.F3 || F.F4 || F.F5 || F.F6 || F.F7 || F.F8)
+	if(F.F5 || F.F6 || F.F7 || F.F8)
 	{
 		if(gSelfChkMask == 0)		// 自检异常不允许激活（信号图标红期间持续自检）
 			gLaBaFlg = 1;
@@ -96,23 +97,24 @@ void Activar()
 // 摇杆/手柄使能用 VKC_Send（CanOpen 10ms 任务刷新，始终新鲜）；
 // 位号=总线下标：vDI bit(8n+k) ? 0x18A[n].k，摇杆 VKC_Send[n] ? 0x188[n]
 // 自检异常原因描述（错误码表：30~37=侧键bit16~23，40~45=开关量，50~55=三支手柄摇杆，56=手柄1使能；0=无异常）
+// 每条提示文字尽量一样长，不一样长的用空格补齐，防止清除时文字清除不干净
 const char* SelfChk_Str(uint32_t mask)
 {
 	switch(mask)
 	{
-		case 0:		return "              ";
-		case 30:	return "F1";
-		case 31:	return "泵站启停";
-		case 32:	return "F3";
-		case 33:	return "使能";
-		case 34:	return "连接通讯响";
-		case 35:	return "F6";
-		case 36:	return "F7";
-		case 37:	return "F8";
-		case 40:	return "抓手合";
-		case 41:	return "抓手开";
-		case 42:	return "自平行开关";
-		case 43:	return "液压镐开关";
+		case 0:		return "           ";
+		case 30:	return "F1         ";
+		case 31:	return "泵站启停    ";
+		case 32:	return "F3         ";
+		case 33:	return "使能        ";
+		case 34:	return "连接通讯响  ";
+		case 35:	return "F6         ";
+		case 36:	return "F7         ";
+		case 37:	return "F8         ";
+		case 40:	return "抓手合      ";
+		case 41:	return "抓手开     ";
+		case 42:	return "自平行开关 ";
+		case 43:	return "液压镐开关 ";
 		
 
 		case 50:	return "手柄1上下";
@@ -124,7 +126,7 @@ const char* SelfChk_Str(uint32_t mask)
 		case 56:	return "手柄1使能";
 		case 57:	return "手柄2使能";
 		case 58:	return "手柄3使能";
-		default:	return "未知";
+		default:	return "未知    ";
 	}
 }
 
@@ -138,19 +140,23 @@ static void SelfChk_Proc(uint32_t* err_mask)
 
 	// 依次检查，首个异常的错误码写入 *err_mask（错误码表与 SelfChk_Str 一致）
 	// 位号按 KXCAN_GLGJT312E_L3X.md：vDI bit(8n+k) ? 0x18A[n].k
-	if(_BitV(vDI, 16))				*err_mask = 30;		// F1        0x18A[2].0
+
+	// 16~23固定为侧边按钮，通常没有定义功能的按钮和打铃按钮会被设置为激活按钮，所以一般不参加自检
+	// if(_BitV(vDI, 16))				*err_mask = 30;		// F1        0x18A[2].0
 	else if(_BitV(vDI, 17))			*err_mask = 31;		// 泵站启停  0x18A[2].1
-	else if(_BitV(vDI, 18))			*err_mask = 32;		// F3        0x18A[2].2
+	// else if(_BitV(vDI, 18))			*err_mask = 32;		// F3        0x18A[2].2
 	else if(_BitV(vDI, 19))			*err_mask = 33;		// 使能      0x18A[2].3
-	// 连接通讯响(0x18A[2].4)=激活键，不作自检项（自检时按下它用于激活）
-	else if(_BitV(vDI, 21))			*err_mask = 35;		// F6        0x18A[2].5
-	else if(_BitV(vDI, 22))			*err_mask = 36;		// F7        0x18A[2].6
-	else if(_BitV(vDI, 23))			*err_mask = 37;		// F8        0x18A[2].7
+	// else if(_BitV(vDI, 20))			*err_mask = 33;		// 打铃      0x18A[2].4
+	// else if(_BitV(vDI, 21))			*err_mask = 35;		// F6        0x18A[2].5
+	// else if(_BitV(vDI, 22))			*err_mask = 36;		// F7        0x18A[2].6
+	// else if(_BitV(vDI, 23))			*err_mask = 37;		// F8        0x18A[2].7
+
 	else if(_BitV(vDI, 8))			*err_mask = 40;		// 抓手合    0x18A[1].0
 	else if(_BitV(vDI, 9))			*err_mask = 41;		// 抓手开    0x18A[1].1
 	else if(!_BitV(vDI, 1))			*err_mask = 42;		// 自平行开关 0x18A[0].1
 	else if(!_BitV(vDI, 24))		*err_mask = 43;		// 液压镐开关 总线取反!0x18A[3].1，按下=0
-	
+
+	// 手柄相关、模拟量的故障码放在50以后
 	else if(VKC_Send[2] != 0x7F)	*err_mask = 50;		// 手柄1上下 0x188[2]
 	else if(VKC_Send[3] != 0x7F)	*err_mask = 51;		// 手柄1左右 0x188[3]
 	else if(VKC_Send[4] != 0x7F)	*err_mask = 52;		// 手柄2上下 0x188[4]
@@ -160,6 +166,42 @@ static void SelfChk_Proc(uint32_t* err_mask)
 	else if(VKC_Send[1] <= 99)		*err_mask = 56;		// 手柄1使能 0x188[1]（VKC_Send原始字节，对齐HNGL顶钮判法）
 	else if(_BitV(vDI, 30))			*err_mask = 57;		// 手柄2使能 0x18A[3].6
 	else if(_BitV(vDI, 29))			*err_mask = 58;		// 手柄3使能 0x18A[3].5
+}
+// DI 修正：当开关量记录的是模拟量/手柄顶钮时，在此映射到 gDIBitV（参考 213 的 DI_Correction）
+// App_IO.c 在 gDIBitV = gDIBitV0 ^ 0x8000 之前调用本函数
+void DI_Correction(void)
+{
+	// 有时候，开关量会接到模拟量上面，这时就需要将模拟量再映射到gDIBitV0和gDIBitV两个变量上，前者用于自检，后者用于发送给接收机
+
+    // 搅拌：模拟量 0x18D.4&5 = ADCRst[16](16bit)，>500 表示开
+	di_map_int(ADCRst[16], &gDIBitV0, &gDIBitV, 1);
+	// 左手柄顶部按钮(使能)：0x188.1 = Y_Send[1] -> VKC_Send[1]，==0 表示按下(使能)
+	di_map_int(VKC_Send[1], &gDIBitV0, &gDIBitV, 6);
+}
+
+void ADC_Correction(void)
+{
+	/* 如果手柄/旋钮通道在VKC_Send数组中，则无需映射。
+	   如果不在这8个通道，则需要映射，统一映射到0~255.接收机接收之后再根据协议做映射
+	   手柄的ADC最大值、中间值，最小值在对应的遥控器md文件中的测试部分会有记录，旋钮则只记录最大值和最小值
+	*/
+	ADC_value[0] = Analog_Remap(&ADCRst[3], 0x1A0, 0x7EE, 0xE35, 10, 0, 0x7F, 255); // 直线手柄1
+	ADC_value[1] = Analog_Remap(&ADCRst[8], 0x1AB, 0x7EE, 0xE35, 10, 0, 0x7F, 255); // 直线手柄3
+	/* ADC_value数组如何使用，一共有5个字节，也就是不在VKC_Send通道的模拟量最多再支持5个
+	   这5个变量再App_comm.c中的YKQ_Data_WL函数中发送给接收机
+	*/
+}
+
+void Straight_handle(void) // 直线手柄
+{
+	// 有直线手柄时，可在此处在显示屏上显示直线手柄值，目前只做了三个通道
+	char str[8] = {0};
+	snprintf(str, sizeof(str), "%-3d", (ADC_value[0]+1) * 126 / 255);
+	LCD_Disp_Txt(FONT_16, 120, 140, str);
+	snprintf(str, sizeof(str), "%-3d", 126 - (VKC_Send[5]+1) * 126 / 255);
+	LCD_Disp_Txt(FONT_16, 150, 140, str);
+	snprintf(str, sizeof(str), "%-3d", (ADC_value[1]+1) * 126 / 255);
+	LCD_Disp_Txt(FONT_16, 180, 140, str);
 }
 
 // 自检状态机，10ms 节拍：0=上电延时300ms → 1=自检循环 → 2=正常运行

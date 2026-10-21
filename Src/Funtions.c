@@ -74,6 +74,55 @@ uint16_t Analog_Remap(const uint32_t *in,
     return (uint16_t)v;
 }
 
+// ADC 线性映射：adc ∈ [adc_min, adc_max] -> out ∈ [out_min, out_max]
+// 支持反向映射(out_min > out_max)；超量程自动钳位；除零保护；int64 防乘积溢出。
+// 参数顺序与 Analog_Remap 保持一致：out_min 在 out_max 之前。
+uint16_t adc_map_int(uint32_t adc, uint16_t adc_min, uint16_t adc_max,
+                     uint16_t out_min, uint16_t out_max)
+{
+    int32_t span_adc, span_out, adc_s, out;
+
+    if (adc_max == adc_min) return out_min;          /* 除零保护 */
+
+    span_adc = (int32_t)adc_max - (int32_t)adc_min;
+    span_out = (int32_t)out_max - (int32_t)out_min;
+
+    /* 输入钳位到量程内（同时兼容 adc_min > adc_max 的反向量程）*/
+    if (adc < adc_min) adc = adc_min;
+    if (adc > adc_max) adc = adc_max;
+    adc_s = (int32_t)adc - (int32_t)adc_min;
+
+    /* 先乘(int64 防溢出)再四舍五入后除，结果落在 [out_min, out_max] 附近 */
+    out = out_min + (int32_t)(((int64_t)adc_s * span_out + (span_adc >> 1)) / span_adc);
+
+    /* 钳位到 uint16 合法范围 */
+    if (out < 0)      out = 0;
+    if (out > 65535)  out = 65535;
+
+    return (uint16_t)out;
+}
+
+// DI 数字量映射：in > 阈值(500) 时置位 v1/v2 的第 num 位，否则清位
+// 保护：num 须 < 32（移位越界为 UB，直接返回）；v1/v2 可为 NULL（忽略该目标）
+void di_map_int(uint32_t in, unsigned long* v1, unsigned long* v2, uint8_t num)
+{
+    unsigned long bit;
+
+    if (num >= 32U) return;                 /* 移位越界保护 */
+    bit = 1UL << num;
+
+    if (in > 500)
+    {
+        if (v1) *v1 |= bit;
+        if (v2) *v2 |= bit;
+    }
+    else
+    {
+        if (v1) *v1 &= ~bit;
+        if (v2) *v2 &= ~bit;
+    }
+}
+
 __weak void Straight_handle(void)
 {}
 

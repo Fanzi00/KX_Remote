@@ -28,8 +28,8 @@ const SwiIconCfg_t gSwiIconTab2[] = {	// 第二排纽子
 };
 // 无旋钮（_XN_LiuL=0）
 const KnobValCfg_t gKnobValTab[] = {
-	{0, _XN1_AD_CHN,  54, 102+5, 4,  42, 102+12},		// 左旋钮 数值y=vDispLine1+5 圆弧y=vDispLine1+12
-	{0, _XN2_AD_CHN, 257, 102+5, 4, 246, 102+12},		// 右旋钮
+	{0,  54, 102+5, 4,  42, 102+12},		// 左旋钮 数值y=vDispLine1+5 圆弧y=vDispLine1+12
+	{0, 257, 102+5, 4, 246, 102+12},		// 右旋钮
 	{0xFF}
 };
 

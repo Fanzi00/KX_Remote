@@ -25,12 +25,12 @@ const SwiIconCfg_t gSwiIconTab2[] = {	// 第二排纽子
 	{0xFF}
 };
 // 旋钮"图标+数值"显示表（App_lcd.c 的 Disp_ZZT_CtrlStatus 遍历绘制，#if _XN_LiuL 时生效）
-// 行格式: {显示, ADCRst的AD通道, 数值X, 数值Y, 显示位数, 圆弧X, 圆弧Y}
-// 圆弧和数值绑定：显示=1两者都画，=0都不画；显示的是AD原始采样值(0~4095)
+// 行格式: {显示, 数值X, 数值Y, 显示位数, 圆弧X, 圆弧Y}
+// 圆弧和数值绑定：显示=1两者都画，=0都不画；显示值由 Disp_KnobValTab 取 stKnob[i]
 // 末行 {0xFF} 为表结束标志，勿删
 const KnobValCfg_t gKnobValTab[] = {
-	{0, _XN1_AD_CHN,  54, 102+5, 4,  42, 102+12},		// 左旋钮 数值y=vDispLine1+5 圆弧y=vDispLine1+12
-	{0, _XN2_AD_CHN, 257, 102+5, 4, 246, 102+12},		// 右旋钮
+	{0,  54, 102+5, 4,  42, 102+12},		// 左旋钮 数值y=vDispLine1+5 圆弧y=vDispLine1+12
+	{0, 257, 102+5, 4, 246, 102+12},		// 右旋钮
 	{0xFF}
 };
 
