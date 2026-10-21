@@ -154,7 +154,20 @@ void Arm_Study(void)
 			gBDParam[1].vRockV[i*2][0] = ADCRst[gArmUpTab[i]];
 			gBDParam[1].vRockV[i*2+1][0] = ADCRst[gArmDownTab[i]];
 		}
-			#if _V_2					// 新的版本，旋钮到最大，采样值最小 0
+		#if _STR_RK_EN
+			// 直线摇杆1/3 中位学习（复用 vRockV[16..19]，与模拟轴共用 ADCRst[3]/[8] 物理通道）
+			if((ADCRst[_STR_RK1_ADCH] <= 100) || (ADCRst[_STR_RK1_ADCH] >= 4090) ||
+			   (ADCRst[_STR_RK3_ADCH] <= 100) || (ADCRst[_STR_RK3_ADCH] >= 4090))
+			{
+				LCD_Disp_Txt(FONT_12, vDX, vDY, "直线摇杆采样异常");
+				return;
+			}
+			gBDParam[1].vRockV[_STR_RK1_RVIDX*2][0]   = ADCRst[_STR_RK1_ADCH];
+			gBDParam[1].vRockV[_STR_RK1_RVIDX*2+1][0] = ADCRst[_STR_RK1_ADCH];
+			gBDParam[1].vRockV[_STR_RK3_RVIDX*2][0]   = ADCRst[_STR_RK3_ADCH];
+			gBDParam[1].vRockV[_STR_RK3_RVIDX*2+1][0] = ADCRst[_STR_RK3_ADCH];
+		#endif
+		#if _V_2					// 新的版本，旋钮到最大，采样值最小 0
 		#if _XN_LiuL
 				if(ADCRst[_XN1_AD_CHN] > 0x800)
 				{
@@ -192,6 +205,12 @@ void Arm_Study(void)
 				gBDParam[1].vRockV[i*2][1] = gBDParam[1].vRockV[i*2][0];
 				gBDParam[1].vRockV[i*2+1][1] = gBDParam[1].vRockV[i*2+1][0];
 			}
+			#if _STR_RK_EN
+			gBDParam[1].vRockV[_STR_RK1_RVIDX*2][1]   = gBDParam[1].vRockV[_STR_RK1_RVIDX*2][0];
+			gBDParam[1].vRockV[_STR_RK1_RVIDX*2+1][1] = gBDParam[1].vRockV[_STR_RK1_RVIDX*2+1][0];
+			gBDParam[1].vRockV[_STR_RK3_RVIDX*2][1]   = gBDParam[1].vRockV[_STR_RK3_RVIDX*2][0];
+			gBDParam[1].vRockV[_STR_RK3_RVIDX*2+1][1] = gBDParam[1].vRockV[_STR_RK3_RVIDX*2+1][0];
+			#endif
 			stStudyFlg |= 4;
 		}
 		for(i=0; i<_ARM_USE; i++)
@@ -203,7 +222,17 @@ void Arm_Study(void)
 			   (ADCRst[gArmDownTab[i]] > gBDParam[1].vRockV[i*2+1][1]))
 				gBDParam[1].vRockV[i*2+1][1] = ADCRst[gArmDownTab[i]];
 		}
-			#if _V_2					// 新的版本，旋钮到最大，采样值最小 0
+		#if _STR_RK_EN
+			if((ADCRst[_STR_RK1_ADCH] > 100) && (ADCRst[_STR_RK1_ADCH] < gBDParam[1].vRockV[_STR_RK1_RVIDX*2][1]))
+				gBDParam[1].vRockV[_STR_RK1_RVIDX*2][1] = ADCRst[_STR_RK1_ADCH];
+			if((ADCRst[_STR_RK1_ADCH] < 4090) && (ADCRst[_STR_RK1_ADCH] > gBDParam[1].vRockV[_STR_RK1_RVIDX*2+1][1]))
+				gBDParam[1].vRockV[_STR_RK1_RVIDX*2+1][1] = ADCRst[_STR_RK1_ADCH];
+			if((ADCRst[_STR_RK3_ADCH] > 100) && (ADCRst[_STR_RK3_ADCH] < gBDParam[1].vRockV[_STR_RK3_RVIDX*2][1]))
+				gBDParam[1].vRockV[_STR_RK3_RVIDX*2][1] = ADCRst[_STR_RK3_ADCH];
+			if((ADCRst[_STR_RK3_ADCH] < 4090) && (ADCRst[_STR_RK3_ADCH] > gBDParam[1].vRockV[_STR_RK3_RVIDX*2+1][1]))
+				gBDParam[1].vRockV[_STR_RK3_RVIDX*2+1][1] = ADCRst[_STR_RK3_ADCH];
+		#endif
+		#if _V_2					// 新的版本，旋钮到最大，采样值最小 0
 		#if _XN_LiuL
 				if(ADCRst[_XN1_AD_CHN] < gBDParam[1].vRockV[_XN1_RV_CHN][1])
 				{
@@ -243,6 +272,20 @@ void Arm_Study(void)
 				return;
 			}
 		}
+		#if _STR_RK_EN
+			if((gBDParam[1].vRockV[_STR_RK1_RVIDX*2][1] <= 100) ||
+			   (gBDParam[1].vRockV[_STR_RK1_RVIDX*2][1] + 120 >= gBDParam[1].vRockV[_STR_RK1_RVIDX*2][0]) ||
+			   (gBDParam[1].vRockV[_STR_RK1_RVIDX*2+1][0] + 120 >= gBDParam[1].vRockV[_STR_RK1_RVIDX*2+1][1]) ||
+			   (gBDParam[1].vRockV[_STR_RK1_RVIDX*2+1][1] >= 4090) ||
+			   (gBDParam[1].vRockV[_STR_RK3_RVIDX*2][1] <= 100) ||
+			   (gBDParam[1].vRockV[_STR_RK3_RVIDX*2][1] + 120 >= gBDParam[1].vRockV[_STR_RK3_RVIDX*2][0]) ||
+			   (gBDParam[1].vRockV[_STR_RK3_RVIDX*2+1][0] + 120 >= gBDParam[1].vRockV[_STR_RK3_RVIDX*2+1][1]) ||
+			   (gBDParam[1].vRockV[_STR_RK3_RVIDX*2+1][1] >= 4090))
+			{
+				LCD_Disp_Txt(FONT_12, vDX, vDY, "直线摇杆未学习或无效");
+				return;
+			}
+		#endif
 		memcpy(&gBDParam[0], &gBDParam[1], sizeof(gBDParam[0]));
 		Arm_RockX();
 		gSaveFlg = 1;

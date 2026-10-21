@@ -596,9 +596,20 @@ void BD_Patam_Init(void)
 		}
 		gBDParam[0].vRockV[_XN1_RV_CHN][0] = 0x40;				// 旋钮的最小值
 		gBDParam[0].vRockV[_XN1_RV_CHN][1] = 0x900;			// 旋钮的最大值
-#endif	
+		#endif	
+		#if _STR_RK_EN
+			// 直线摇杆1/3 默认端点（学习前使用），复用 vRockV[16..19]，不改 Flash 结构
+			gBDParam[0].vRockV[_STR_RK1_RVIDX*2][1]	= 0x1A0;	// 摇杆1 低端(底)
+			gBDParam[0].vRockV[_STR_RK1_RVIDX*2][0]	= 0x7EE;	// 摇杆1 中位
+			gBDParam[0].vRockV[_STR_RK1_RVIDX*2+1][0]	= 0x7EE;	// 摇杆1 高侧中位
+			gBDParam[0].vRockV[_STR_RK1_RVIDX*2+1][1]	= 0xE35;	// 摇杆1 高端(顶)
+			gBDParam[0].vRockV[_STR_RK3_RVIDX*2][1]	= 0x1AB;	// 摇杆3 低端(底)
+			gBDParam[0].vRockV[_STR_RK3_RVIDX*2][0]	= 0x7EE;	// 摇杆3 中位
+			gBDParam[0].vRockV[_STR_RK3_RVIDX*2+1][0]	= 0x7EE;	// 摇杆3 高侧中位
+			gBDParam[0].vRockV[_STR_RK3_RVIDX*2+1][1]	= 0xE35;	// 摇杆3 高端(顶)
+		#endif
 
-	memcpy((unsigned char*)(&gBDParam[1]), (unsigned char*)(&gBDParam[0]), sizeof(gBDParam[0]));
+		memcpy((unsigned char*)(&gBDParam[1]), (unsigned char*)(&gBDParam[0]), sizeof(gBDParam[0]));
 }
 
 

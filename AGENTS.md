@@ -229,3 +229,18 @@
 - 因此屏上直线摇杆1/3 数值：中位附近为平区(显示63不抖)，越过死区边界连续变化（无跳变）；落入死区时接收机收到中位(0x7F)。
 - 自检 `SelfChk_Proc` 判直线摇杆1/3 回中读 `ADC_value`（死区化），死区内判为已回中，与模拟量死区行为一致。
 - 死区范围 1~9 档，每档 = 半量程(127) 的 6%×(1+档位)，与模拟量 `KX_JoyValue` 的百分比公式一致（vDS=3≈±30，vDS=9≈±76，单位 0~255）。
+
+## 8b. 直线摇杆1/3 纳入摇杆自学习（同分支）
+**需求**：直线摇杆1/3 的映射端点此前为硬编码常量（0x1A0/0x7EE/0xE35 等）；现使其与 8 路模拟轴一样可在"学习页"用 F2采中位 / F3采极限 标定，F1 提交保存。
+
+**实现（复用空闲的 vRockV[16..19]，不改 Flash 结构）**
+- `User/KX119_GLMZ_L2X3J.h`：新增开关 `_STR_RK_EN` 及宏 `_STR_RK1_ADCH=3`(直线摇杆1=ADCRst[3])、`_STR_RK3_ADCH=8`(直线摇杆3=ADCRst[8])、`_STR_RK1_RVIDX=8`、`_STR_RK3_RVIDX=9`（对应 vRockV 槽 16/17、18/19；与模拟轴 1/3 共用同一物理 ADCRst 通道，但存于不同校准槽）。
+- `Src/App_Bus.c`：`Sys_Para_Init()` 在原有 `for(i<_ARM_MAX)` 之后、`memcpy` 之前，以 `#if _STR_RK_EN` 写入直线摇杆默认端点（摇杆1: 0x1A0/0x7EE/0xE35；摇杆3: 0x1AB/0x7EE/0xE35），保证未学习时映射正确。
+- `Src/App_usr.c` `Arm_Study()`：F2(中位) 块在模拟轴循环后捕获 `ADCRst[3]/[8]` 中位写入 `vRockV[16..19]`；F3(极限) 块的"范围初始化"与"跟踪"同步覆盖直线摇杆（min/max 跟踪同模拟轴写法）；F1(提交) 校验块追加直线摇杆有效性判断（端点合法才允许 `memcpy` 提交）。三段均 `#if _STR_RK_EN` 保护，其他设备编译时不参与。
+- `User/KX119_GLMZ_L2X3J.c`：`ADC_Correction()` 由硬编码常量改为读 `gBDParam[0].vRockV[16..19]`（in_min=RV[2*idx][1], in_mid=RV[2*idx][0], in_max=RV[2*idx+1][1]）再叠加 `Straight_DeadZone`，死区逻辑不变。
+- `Src/App_lcd.c`：学习页 `Disp_ZZT_CtrlStatus()` 在模拟轴 `KX_JoyValue` 循环后，以 `#if _STR_RK_EN` 显示 `ADC_value[0]/[1]`（坐标 120/180,140），便于观察直线摇杆实时位置。
+
+**注意 / 副作用**
+- 直线摇杆1/3 与模拟轴 1/3 共用同一物理 ADCRst 通道（3/8）：学习摇动同一摇杆时，模拟轴与直线摇杆的端点会被同时采集（存于不同 vRockV 槽），互不冲突。
+- 与模拟轴一致：学习显示按当前生效的 `gBDParam[0]` 换算（`ADC_Correction` 用 [0]），本轮 F2/F3 暂存 [1]，F1 提交后 `[1]→[0]` 才生效；故屏上读数不等于本轮正在采集的原始标定值。
+- 不学习直线摇杆时，vRockV[16..19] 保持 `App_Bus.c` 默认端点，F1 校验必过，ADC_Correction 照常工作。

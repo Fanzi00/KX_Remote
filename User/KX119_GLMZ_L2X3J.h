@@ -4,6 +4,13 @@
 
 #pragma anon_unions // 匿名结构/联合，其成员可直接访问
 
+// 直线摇杆1/3 纳入摇杆自学习（复用 vRockV[16..19]，不改 Flash 结构）
+#define _STR_RK_EN      1
+#define _STR_RK1_ADCH   3   // 直线摇杆1 = ADCRst[3]
+#define _STR_RK3_ADCH   8   // 直线摇杆3 = ADCRst[8]
+#define _STR_RK1_RVIDX  8   // 直线摇杆1 在 vRockV 的通道索引(复用槽 16/17)
+#define _STR_RK3_RVIDX  9   // 直线摇杆3 在 vRockV 的通道索引(复用槽 18/19)
+
 typedef struct Activar
 {
     uint8_t F1 : 1;

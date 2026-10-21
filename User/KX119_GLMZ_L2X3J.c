@@ -188,8 +188,8 @@ static unsigned char Straight_DeadZone(unsigned char val, unsigned char dsIdx)
 void ADC_Correction(void)
 {
 	// 直线摇杆1/3：先线性映射到 0~255(中位0x7F)，再叠加连续死区；显示与发送帧共用 ADC_value
-	ADC_value[0] = Straight_DeadZone((unsigned char)Analog_Remap(&ADCRst[3], 0x1A0, 0x7EE, 0xE35, 10, 0, 0x7F, 255), _ARM_USE);     // 直线手柄1 + 死区
-	ADC_value[1] = Straight_DeadZone((unsigned char)Analog_Remap(&ADCRst[8], 0x1AB, 0x7EE, 0xE35, 10, 0, 0x7F, 255), _ARM_USE+1); // 直线手柄3 + 死区
+	ADC_value[0] = Straight_DeadZone((unsigned char)Analog_Remap(&ADCRst[_STR_RK1_ADCH], gBDParam[0].vRockV[_STR_RK1_RVIDX*2][1], gBDParam[0].vRockV[_STR_RK1_RVIDX*2][0], gBDParam[0].vRockV[_STR_RK1_RVIDX*2+1][1], 10, 0, 0x7F, 255), _ARM_USE);     // 直线手柄1 + 死区(端点可自学习)
+	ADC_value[1] = Straight_DeadZone((unsigned char)Analog_Remap(&ADCRst[_STR_RK3_ADCH], gBDParam[0].vRockV[_STR_RK3_RVIDX*2][1], gBDParam[0].vRockV[_STR_RK3_RVIDX*2][0], gBDParam[0].vRockV[_STR_RK3_RVIDX*2+1][1], 10, 0, 0x7F, 255), _ARM_USE+1); // 直线手柄3 + 死区(端点可自学习)
 }
 // 直线手柄值显示
 void Straight_handle()

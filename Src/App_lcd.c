@@ -621,6 +621,12 @@ void Disp_ZZT_CtrlStatus(void)
 		LCD_Get_Color(0,6,6);
 		for(i=0; i<_ARM_USE; i++)
 			LCD_Disp_Intx(FONT_16, romArmValDisp[i][0], romArmValDisp[i][1], KX_JoyValue(i), 4);
+		#if _STR_RK_EN
+			{ extern unsigned char ADC_value[5];
+			LCD_Disp_Intx(FONT_16, 120, 140, ADC_value[0], 4); // 直线摇杆1 实时值
+			LCD_Disp_Intx(FONT_16, 180, 140, ADC_value[1], 4); // 直线摇杆3 实时值
+			}
+		#endif
 		if(gLCDBKOnFlg == 0)
 			Key_ZZT_CtrlStatus();
 		return;
