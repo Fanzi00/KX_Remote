@@ -73,3 +73,12 @@ uint16_t Analog_Remap(const uint32_t *in,
     if (v > 65535)  return 65535U;
     return (uint16_t)v;
 }
+
+__weak void Straight_handle(void)
+{}
+
+__weak void ADC_Correction(void)
+{}
+
+__weak void DI_Correction(void)
+{}

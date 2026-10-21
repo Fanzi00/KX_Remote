@@ -678,7 +678,7 @@ void Disp_ZZT_CtrlStatus(void)
 		//if(gLCDPage.vPageX == 8)
 		{
 		#if _XN_LiuL
-			Disp_KnobValTab();														// 流量旋钮数值，配置表在各遥控器 .c 中
+			Disp_KnobValTab();														// 旋钮数值，配置表在各遥控器 .c 中
 		#else
 			gADArmConV[_ARM_MAX-1] = gADArmSend[_ARM_MAX-1] * 255 / 250;
 //			LCD_Disp_Intx(FONT_16, 257, vDispLine1+5, gADArmConV[_ARM_MAX-1], 3);						// 刷动

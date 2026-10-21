@@ -230,13 +230,8 @@ void ADC_Correction()
 		ADCRst[9] = 0xA70;
 	else if(ADCRst[9] < 0x7)
 		ADCRst[9] = 0;
-
-	// 一阶低通滤波(alpha=1/4)，平滑旋钮末位跳动；用16位缓存避免 *3 溢出
-	uint8_t raw = (uint8_t)(ADCRst[9] * 0x7F / 0xA70);
-	static uint16_t filt = 0;
-	filt = (filt * 3 + raw + 2) / 4;	// +2 四舍五入
-	ADC_value[3]    = (uint8_t)filt;
-	stKnob[1] = (uint8_t)filt;		// LCD 显示与发送同步平滑
+	ADC_value[3] = (uint8_t)(ADCRst[9] * 0x7F / 0xA70);
+	stKnob[1] = ADC_value[3];		// LCD 显示与发送同步平滑
 }
 
 // 自检状态机，10ms 节拍：0=上电延时300ms → 1=自检循环 → 2=正常运行
