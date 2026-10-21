@@ -67,7 +67,7 @@ void Straight_handle(void); // Ö±ÏßÊÖ±ú
 /*******************USER_TYPE*******************/
 /*******************USER_TYPE*******************/
 
-#define USER_TYPE		Example
+#define USER_TYPE		KX119_GLMZ_L2X3J
 
 /*******************USER_TYPE*******************/
 /*******************USER_TYPE*******************/

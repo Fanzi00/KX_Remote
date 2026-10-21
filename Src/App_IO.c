@@ -476,9 +476,27 @@ void Key_MainZZT(void)
 *
 ****************************************************************************/
 unsigned int stCSKeyCnt = 0;
+// 取第 row 个死区显示坐标：row<_ARM_USE 为模拟通道(romArmDSDisp)；_ARM_USE=直线摇杆1；_ARM_USE+1=直线摇杆3
+static void GetDSXY(unsigned char row, unsigned short* px, unsigned short* py)
+{
+	if(row < _ARM_USE)
+	{
+		*px = romArmDSDisp[row][0];
+		*py = romArmDSDisp[row][1];
+	}
+	else if(row == _ARM_USE)
+	{
+		*px = STR_DS1_X; *py = STR_DS1_Y;
+	}
+	else
+	{
+		*px = STR_DS3_X; *py = STR_DS3_Y;
+	}
+}
 void Key_ZZT_CtrlStatus(void)
 {
 	static unsigned char stRow = 0;			// 第几个摇杆
+	unsigned short vx = 0, vy = 0;			// 当前死区坐标(缓存)
 	Arm_Study();
 	if(stStudyFlg || (gp_lcdtask != Disp_ZZT_CtrlStatus))		// 学习中或刚退出学习(F4)，不再走普通状态页按键
 		return;
@@ -498,13 +516,13 @@ void Key_ZZT_CtrlStatus(void)
 			{
 				gArmDSSetFlg ^= 1;
 			}
+			GetDSXY(stRow, &vx, &vy);
 			if(gArmDSSetFlg == 0)
-				LCD_Set_Cursor(0,romArmDSDisp[stRow][0],romArmDSDisp[stRow][1]+16, 9, 1);
+				LCD_Set_Cursor(0, vx, vy+16, 9, 1);
 			else
-				LCD_Set_Cursor(1,romArmDSDisp[stRow][0],romArmDSDisp[stRow][1]+16, 9, 1); 
+				LCD_Set_Cursor(1, vx, vy+16, 9, 1); 
 			gDIScanCnt[16] = 0;
-			LCD_Disp_Rect(LCD_C_D_Rect,romArmDSDisp[stRow][0]-3,romArmDSDisp[stRow][1]-1,
-						romArmDSDisp[stRow][0]+25,romArmDSDisp[stRow][1]+18);
+			LCD_Disp_Rect(LCD_C_D_Rect, vx-3, vy-1, vx+25, vy+18);
 			Arm_RockX();
 			break;
 		case _F2:			// 向左
@@ -514,19 +532,19 @@ void Key_ZZT_CtrlStatus(void)
 				gDIScanCnt[17] = 0;
 				break;
 			}
-			LCD_Disp_Rect(LCD_C_C_Rect,romArmDSDisp[stRow][0]-3,romArmDSDisp[stRow][1]-1,
-						romArmDSDisp[stRow][0]+25,romArmDSDisp[stRow][1]+18);
+			GetDSXY(stRow, &vx, &vy);
+			LCD_Disp_Rect(LCD_C_C_Rect, vx-3, vy-1, vx+25, vy+18);	// 清除旧框
 			stCSKeyCnt++;
 			if(stCSKeyCnt == 2)
 				stRow++;
-			if(stRow >= _ARM_USE)
+			if(stRow >= _ARM_DS_TOTAL)
 				stRow = 0;
-			LCD_Disp_Rect(LCD_C_D_Rect,romArmDSDisp[stRow][0]-3,romArmDSDisp[stRow][1]-1,
-						romArmDSDisp[stRow][0]+25,romArmDSDisp[stRow][1]+18);
+			GetDSXY(stRow, &vx, &vy);
+			LCD_Disp_Rect(LCD_C_D_Rect, vx-3, vy-1, vx+25, vy+18);	// 新框
 			if(gArmDSSetFlg == 0)
-				LCD_Set_Cursor(0,romArmDSDisp[stRow][0],romArmDSDisp[stRow][1]+16, 9, 1);
+				LCD_Set_Cursor(0, vx, vy+16, 9, 1);
 			else
-				LCD_Set_Cursor(1,romArmDSDisp[stRow][0],romArmDSDisp[stRow][1]+16, 9, 1); 
+				LCD_Set_Cursor(1, vx, vy+16, 9, 1); 
 			gDIScanCnt[17] = 0;
 			break;
 		case _F3:			// 向上，加1

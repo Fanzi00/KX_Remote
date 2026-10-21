@@ -212,3 +212,20 @@
 - Fix: Src/main.c gT0SFlg block: whenever RX transitions offline->online (gWLSingV>0 while stWLHad was 0; covers both reconnect-after-drop AND RX powered-on later after TX already activated) clear gLaBaFlg=0; TX will NOT auto-connect, user must press activate key or force-activate. Online-only activation (RX already up when key pressed) is not disturbed.
 - Force-activate: added to all User/*.c Activar(): F5~F8 long-press 6s (forceDly counts to 6000, DI_Scan 1ms tick) sets gLaBaFlg=1 bypassing self-check. L2X3J has no F5~F8, uses F1~F4.
 - GLMZ213_L3X already had force-activate; GLZYTC/GLGJT312E/Example/QLG0312A/L2X3J added now.
+
+## 8. 直线摇杆1/3 增加可设置死区（分支 KX119_GLMZ_L2X3J）
+**需求**：状态页 8 路模拟量已有 F1长按进设置 / F2选轴 / F3加档 / F4保存 的死区修改；现给直线摇杆1/3 也加死区（直线摇杆2 走 VKC_Send[5]，未加）。
+
+**实现（复用空闲的 vRockDS[8]/[9]，不改 Flash 结构）**
+- `mBDParam.vRockDS[_ARM_MAX]` 中 `_ARM_MAX=10`、`_ARM_USE=8`，索引 8/9 原未被模拟量使用 → `vRockDS[8]`=直线摇杆1、`vRockDS[9]`=直线摇杆3。默认初值由 `App_Bus.c` 的 `for(i<_ARM_MAX) vRockDS[i]=3` 置 3。
+- `Src/App_usr.h`：新增 `STR_DS1_X/Y`、`STR_DS3_X/Y`（=直线摇杆数值坐标 120/180,140 下方 156）与 `_ARM_DS_TOTAL (_ARM_USE+2)`。
+- `Src/App_IO.c`：新增 `GetDSXY(row,&x,&y)`（模拟量用 `romArmDSDisp[row]`，直线摇杆1/3 用 `STR_DS*`）；F1/F2 的矩形框/光标改走 `GetDSXY`；F2 回绕由 `_ARM_USE` 改为 `_ARM_DS_TOTAL`，故 F2 从行0移动7次到行7后，继续顺移到直线摇杆1/3 死区（行8/9）。F3 逻辑无需改，`vRockDS[stRow]++` 对 8/9 同样有效。
+- `Src/App_lcd.c`：状态页刷新段在模拟量死区循环后，用 `LCD_Disp_Int` 在 `STR_DS1/3` 处显示 `vRockDS[8]/[9]`。
+- `User/KX119_GLMZ_L2X3J.c`：`ADC_Correction()` 对 `ADC_value[0]/[1]`（直线摇杆1/3 映射值，0~255、中位 0x7F=127）叠加**连续死区** `Straight_DeadZone()`：死区内输出中位(平区)，死区外从边界连续线性放大到满量程（斜率压缩，与参考工程 `LinJoy_Conv` 同款逻辑）。显示 `Straight_handle` 与发送帧 ad1/ad2 共用 `ADC_value`，故同步生效且数值连续不跳变。
+- `Src/App_Comm.c`：`YKQ_Data_WL()` 发送帧 ad1/ad2 直接取 `ADC_value[0]/[1]`（已含连续死区），不另做钳制。
+
+**注意 / 副作用**
+- 死区函数必须是"平区+连续线性"（`LinJoy_Conv` 式）：死区内输出中位、死区外从边界连续放大；**不能**写成"死区内钳中位、死区外返回原始值"，否则边界处会从 127 跳到 127+dead（显示 63→47/63→79），即用户报告的"跳变"。本修正版采用连续函数，边界连续过渡，与参考工程 `HNGL_KXCAN_GLG1Z50_L2X3J`(提交 4a86a81) 一致（参考工程显示同样有平区、但无跳变）。
+- 因此屏上直线摇杆1/3 数值：中位附近为平区(显示63不抖)，越过死区边界连续变化（无跳变）；落入死区时接收机收到中位(0x7F)。
+- 自检 `SelfChk_Proc` 判直线摇杆1/3 回中读 `ADC_value`（死区化），死区内判为已回中，与模拟量死区行为一致。
+- 死区范围 1~9 档，每档 = 半量程(127) 的 6%×(1+档位)，与模拟量 `KX_JoyValue` 的百分比公式一致（vDS=3≈±30，vDS=9≈±76，单位 0~255）。

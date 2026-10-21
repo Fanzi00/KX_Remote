@@ -674,6 +674,9 @@ void Disp_ZZT_CtrlStatus(void)
 			LCD_Disp_Txt(FONT_16, romArmValDisp[i][0], romArmValDisp[i][1], (unsigned char*)vStr);
 			LCD_Disp_Int(FONT_16, romArmDSDisp[i][0], romArmDSDisp[i][1], gBDParam[0].vRockDS[i]);
 		}
+		// 直线摇杆1/3 死区值显示（新增，坐标见 App_usr.h STR_DS*）
+		LCD_Disp_Int(FONT_16, STR_DS1_X, STR_DS1_Y, gBDParam[0].vRockDS[_ARM_USE]);
+		LCD_Disp_Int(FONT_16, STR_DS3_X, STR_DS3_Y, gBDParam[0].vRockDS[_ARM_USE+1]);
 		Straight_handle(); // 直线手柄
 		//if(gLCDPage.vPageX == 8)
 		{

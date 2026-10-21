@@ -39,6 +39,14 @@
 	#define _ARM_4R_XY		0
 #endif
 
+// 直线摇杆死区显示（状态页）：坐标基于直线摇杆数值坐标(120/180,140)下方偏移
+#define STR_DS1_X		120
+#define STR_DS1_Y		156
+#define STR_DS3_X		180
+#define STR_DS3_Y		156
+// 死区设置可选项数：模拟通道(_ARM_USE) + 直线摇杆1/3 两项
+#define _ARM_DS_TOTAL	(_ARM_USE + 2)
+
 #define  _YKQ_TYPE		"XT3:3.2GD "					// D--DO, F--DFS, H--HAW
 
 

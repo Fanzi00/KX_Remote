@@ -161,10 +161,35 @@ void DI_Correction(void)
 // 注：直线摇杆1/3 为模拟量(ADCRst)，不走 VKC_Send 摇杆轴，直接放入无线帧 ad1/ad2 槽发往接收机，
 //     从而避开 KX_Send_joylogic 的(4,5)轴对主轴优先级逻辑（两路同时动时从轴被清零）。
 //     直线摇杆2 是摇杆轴(VKC_Send[5])，由 KX_Send_joylogic 正常处理。
+// 直线摇杆死区（连续无跳变：死区内输出中位，死区外从边界连续线性放大到满量程）
+// 与参考工程 HNGL_KXCAN_GLG1Z50_L2X3J 的 LinJoy_Conv 同款逻辑（平区+连续线性）：
+// 显示(Straight_handle)与发送帧(ad1/ad2)共用 ADC_value，故同步生效且数值连续不跳变。
+static unsigned char Straight_DeadZone(unsigned char val, unsigned char dsIdx)
+{
+	unsigned short vMid = _ARM_MIDV;          // 127
+	unsigned char  vDS  = gBDParam[0].vRockDS[dsIdx];
+	if((vDS < 1) || (vDS > 9))
+		vDS = 2;
+	unsigned short dead = (unsigned short)(vMid * (1 + vDS) * 6 / 100); // 半量程的 6%*(1+档位)
+	if(val >= vMid)   // 上半
+	{
+		if(val <= vMid + dead)
+			return (unsigned char)vMid;        // 死区内 -> 中位(平区)
+		// 死区外：从边界连续线性放大到满量程255（斜率压缩，与 LinJoy_Conv 一致、无跳变）
+		return (unsigned char)(vMid + (unsigned short)(val - (vMid + dead)) * (255 - vMid) / (255 - (vMid + dead)));
+	}
+	else   // 下半
+	{
+		if(val >= vMid - dead)
+			return (unsigned char)vMid;
+		return (unsigned char)(vMid - (unsigned short)((vMid - dead) - val) * vMid / (vMid - dead));
+	}
+}
 void ADC_Correction(void)
 {
-	ADC_value[0] = Analog_Remap(&ADCRst[3], 0x1A0, 0x7EE, 0xE35, 10, 0, 0x7F, 255); // 直线手柄1
-	ADC_value[1] = Analog_Remap(&ADCRst[8], 0x1AB, 0x7EE, 0xE35, 10, 0, 0x7F, 255); // 首先手柄3
+	// 直线摇杆1/3：先线性映射到 0~255(中位0x7F)，再叠加连续死区；显示与发送帧共用 ADC_value
+	ADC_value[0] = Straight_DeadZone((unsigned char)Analog_Remap(&ADCRst[3], 0x1A0, 0x7EE, 0xE35, 10, 0, 0x7F, 255), _ARM_USE);     // 直线手柄1 + 死区
+	ADC_value[1] = Straight_DeadZone((unsigned char)Analog_Remap(&ADCRst[8], 0x1AB, 0x7EE, 0xE35, 10, 0, 0x7F, 255), _ARM_USE+1); // 直线手柄3 + 死区
 }
 // 直线手柄值显示
 void Straight_handle()

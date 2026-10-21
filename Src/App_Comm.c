@@ -442,8 +442,8 @@ void YKQ_Data_WL(unsigned char vFlg)
 			gYKQ_WLStr[i++] = VKC_Send[5] ;//gADArmSend[5];
 			gYKQ_WLStr[i++] = VKC_Send[6] ;//gADArmSend[6];
 			gYKQ_WLStr[i++] = VKC_Send[7] ;//gADArmSend[7];			// Arm 8
-			gYKQ_WLStr[i++] = ADC_value[0] ;//gADArmSend[8];			// ad1
-			gYKQ_WLStr[i++] = ADC_value[1] ;//gADArmSend[9];			// ad2
+			gYKQ_WLStr[i++] = ADC_value[0] ;//gADArmSend[8];			// ad1 直线手柄1(已含连续死区)
+			gYKQ_WLStr[i++] = ADC_value[1] ;//gADArmSend[9];			// ad2 直线手柄3(已含连续死区)
 			gYKQ_WLStr[i++] = ADC_value[2] ;//gADArmSend[10];			// ad2	10
 			gYKQ_WLStr[i++] = gDIBitV;						// 两档妞子  1bit -- 1个开关，
 			gYKQ_WLStr[i++] = gDIBitV >> 8;
