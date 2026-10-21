@@ -146,6 +146,7 @@ void Arm_Study(void)
 			   (ADCRst[gArmDownTab[i]] <= 100) || (ADCRst[gArmDownTab[i]] >= 4090))
 			{
 				LCD_Disp_Txt(FONT_12, vDX, vDY, "手柄采样异常    ");
+				LCD_Disp_Int(FONT_12, vDX, vDY+16, i);			// 显示异常轴号(0~7)，便于定位未回中/未接通道
 				return;
 			}
 		}
