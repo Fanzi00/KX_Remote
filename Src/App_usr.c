@@ -285,6 +285,7 @@ void Arm_Study(void)
 			}
 		}
 		#if _STR_RK_EN
+			// TODO(2026-10-22) 已知问题: 按 F2采中位->F3推满极限->F1保存，直线摇杆仍可能提示"直线摇杆未学习或无效"，待定位
 			if((gBDParam[1].vRockV[_STR_RK1_RVIDX*2][1] <= 100) ||
 			   (gBDParam[1].vRockV[_STR_RK1_RVIDX*2][1] + 120 >= gBDParam[1].vRockV[_STR_RK1_RVIDX*2][0]) ||
 			   (gBDParam[1].vRockV[_STR_RK1_RVIDX*2+1][0] + 120 >= gBDParam[1].vRockV[_STR_RK1_RVIDX*2+1][1]) ||
