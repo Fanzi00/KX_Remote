@@ -185,11 +185,26 @@ static unsigned char Straight_DeadZone(unsigned char val, unsigned char dsIdx)
 		return (unsigned char)(vMid - (unsigned short)((vMid - dead) - val) * vMid / (vMid - dead));
 	}
 }
+// 取直线摇杆有效端点(min/mid/max)：无效(未学习/旧数据残留/学歪)时回退硬编码默认值，
+// 与模拟轴 KX_JoyValue 的"无有效标定沿用固定曲线"同样思路，避免坏标定把输出顶到 0/255。
+static void StrRk_Endpoints(unsigned char dsIdx, unsigned short dMin, unsigned short dMid, unsigned short dMax,
+							unsigned short* pMin, unsigned short* pMid, unsigned short* pMax)
+{
+	unsigned short vMin = gBDParam[0].vRockV[dsIdx*2][1];		// 低端(底)
+	unsigned short vMid = gBDParam[0].vRockV[dsIdx*2][0];		// 中位
+	unsigned short vMax = gBDParam[0].vRockV[dsIdx*2+1][1];	// 高端(顶)
+	if((vMin <= 100) || (vMin + 120 >= vMid) || (vMid + 120 >= vMax) || (vMax >= 4090))
+	{ vMin = dMin; vMid = dMid; vMax = dMax; }				// 无效 -> 用默认端点
+	*pMin = vMin; *pMid = vMid; *pMax = vMax;
+}
 void ADC_Correction(void)
 {
+	unsigned short r1mn, r1md, r1mx, r3mn, r3md, r3mx;
 	// 直线摇杆1/3：先线性映射到 0~255(中位0x7F)，再叠加连续死区；显示与发送帧共用 ADC_value
-	ADC_value[0] = Straight_DeadZone((unsigned char)Analog_Remap(&ADCRst[_STR_RK1_ADCH], gBDParam[0].vRockV[_STR_RK1_RVIDX*2][1], gBDParam[0].vRockV[_STR_RK1_RVIDX*2][0], gBDParam[0].vRockV[_STR_RK1_RVIDX*2+1][1], 10, 0, 0x7F, 255), _ARM_USE);     // 直线手柄1 + 死区(端点可自学习)
-	ADC_value[1] = Straight_DeadZone((unsigned char)Analog_Remap(&ADCRst[_STR_RK3_ADCH], gBDParam[0].vRockV[_STR_RK3_RVIDX*2][1], gBDParam[0].vRockV[_STR_RK3_RVIDX*2][0], gBDParam[0].vRockV[_STR_RK3_RVIDX*2+1][1], 10, 0, 0x7F, 255), _ARM_USE+1); // 直线手柄3 + 死区(端点可自学习)
+	StrRk_Endpoints(_STR_RK1_RVIDX, 0x1A0, 0x7EE, 0xE35, &r1mn, &r1md, &r1mx);
+	StrRk_Endpoints(_STR_RK3_RVIDX, 0x1AB, 0x7EE, 0xE35, &r3mn, &r3md, &r3mx);
+	ADC_value[0] = Straight_DeadZone((unsigned char)Analog_Remap(&ADCRst[_STR_RK1_ADCH], r1mn, r1md, r1mx, 10, 0, 0x7F, 255), _ARM_USE);     // 直线手柄1 + 死区
+	ADC_value[1] = Straight_DeadZone((unsigned char)Analog_Remap(&ADCRst[_STR_RK3_ADCH], r3mn, r3md, r3mx, 10, 0, 0x7F, 255), _ARM_USE+1); // 直线手柄3 + 死区
 }
 // 直线手柄值显示
 void Straight_handle()
