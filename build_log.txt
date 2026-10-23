@@ -1,0 +1,21 @@
+*** Using Compiler 'V5.06 update 6 (build 750)', folder: 'D:\_software\keil_v5\ARM\ARMCC\Bin'
+Build target 'FLASH'
+compiling Funtions.c...
+Src\Funtions.c(133): warning:  #1-D: last line of file ends without a newline
+  {}
+Src\Funtions.c: 1 warning, 0 errors
+linking...
+Program Size: Code=42574 RO-data=798 RW-data=820 ZI-data=7276  
+FromELF: creating hex file...
+After Build - User command #1: fromelf.exe --bincombined --bincombined_base=0x000 --bincombined_padding=1,0 --output="d:\Desktop\KX_Remote\Source\Project\FSJ_666\FLASH\..\out\HNGL_ZYJ_L4X_119T.bin" "d:\Desktop\KX_Remote\Source\Project\FSJ_666\FLASH\HNGL_ZYJ_L4X_119T.axf"
+After Build - User command #2: "d:\Desktop\KX_Remote\Source\Project\FSJ_666\FLASH\..\out\rename.bat" "d:\Desktop\KX_Remote\Source\Project\FSJ_666\FLASH\..\out\HNGL_ZYJ_L4X_119T.bin"
+[获取机型] USER_TYPE=Example
+[清理旧固件] 匹配前缀：HNGL_ZYJ_L4X_119T
+[清理旧固件] 已删除旧时间戳BIN文件
+[重命名] 原始文件：HNGL_ZYJ_L4X_119T.bin
+[重命名] 新固件名称：HNGL_ZYJ_L4X_119T_Example_20261023_135621.bin
+[rename.bat完成] 本工程固件：d:\Desktop\KX_Remote\Source\Project\FSJ_666\out\HNGL_ZYJ_L4X_119T_Example_20261023_135621.bin
+[rename.bat完成] 最新固件：d:\Desktop\KX_Remote\Source\Project\FSJ_666\out\..\..\out\HNGL_ZYJ_L4X_119T_Example_20261023_135621.bin
+[rename.bat完成] 已归档到：d:\Desktop\KX_Remote\Source\Project\FSJ_666\out\..\..\bin
+".\FLASH\HNGL_ZYJ_L4X_119T.axf" - 0 Error(s), 1 Warning(s).
+Build Time Elapsed:  00:00:04

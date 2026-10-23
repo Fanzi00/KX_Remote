@@ -142,8 +142,8 @@ static void SelfChk_Proc(uint32_t* err_mask)
 	// 位号按 KXCAN_GLGJT312E_L3X.md：vDI bit(8n+k) ? 0x18A[n].k
 
 	// 16~23固定为侧边按钮，通常没有定义功能的按钮和打铃按钮会被设置为激活按钮，所以一般不参加自检
-	// if(_BitV(vDI, 16))				*err_mask = 30;		// F1        0x18A[2].0
-	else if(_BitV(vDI, 17))			*err_mask = 31;		// 泵站启停  0x18A[2].1
+	// F1 不参加自检：原 if 已注释，故此处直接用 if 开头，不能用 else if（否则没有配对的 if）
+	if(_BitV(vDI, 17))				*err_mask = 31;		// 泵站启停  0x18A[2].1
 	// else if(_BitV(vDI, 18))			*err_mask = 32;		// F3        0x18A[2].2
 	else if(_BitV(vDI, 19))			*err_mask = 33;		// 使能      0x18A[2].3
 	// else if(_BitV(vDI, 20))			*err_mask = 33;		// 打铃      0x18A[2].4
@@ -263,7 +263,8 @@ uint8_t showWarn(uint32_t t)
 void clear_lcd(void)
 {
 	// 清空第一栏，-5是为了不清空电池、信号图标
-	for(uint8_t i = 0; i < 320/16 - 5; i++)
+	uint8_t temp = 0;
+	for(uint8_t i = 0; i < 320/16 - temp; i++)
 	{
 		LCD_Disp_Txt(FONT_16, i*16, 5, (uchar*)"  ");
 	}
@@ -364,11 +365,44 @@ void selfDisplay(void)
 		LCD_Disp_Txt(FONT_16, margL, Title+high*5, "                        ");
 	}
 }
+
+// 全部 DI/AI 数值显示(测试用)：
+// DI01~DI32: 每位 0/1，6个/行，每项 53px("DI01:0"=6字符×8px=48px)
+// AI01~AI18: 3位十六进制，5个/行，每项 64px("AI01:1FF"=8字符×8px=64px)
+// 屏 320×240：DI 占 y=0~50，AI 占 y=60~90
+void test(void)
+{
+	char str[16];
+	uint8_t i;
+
+	LCD_Set_Color(COLOR_WHITE_, -1);
+
+	// DI：取 gDIBitV0(原始扫描值，未连接时不会被清零)
+	for(i=0; i<32; i++)
+	{
+		snprintf(str, sizeof(str), "DI%02d:%d", i+1, _BitV(gDIBitV0, i));
+		LCD_Disp_Txt(FONT_8, (i%6)*53, (i/6)*10, (uchar*)str);
+	}
+
+	// AI：ADCRst 原始值，低12位按十六进制显示(0x000~0xFFF)
+	for(i=0; i<ADC_NUM; i++)
+	{
+		snprintf(str, sizeof(str), "AI%02d:%03X", i+1, ADCRst[i]&0x0FFF);
+		LCD_Disp_Txt(FONT_8, (i%5)*64, 60+(i/5)*10, (uchar*)str);
+	}
+}
 // 主要逻辑
 void MainLogic(void)
 {
-	display();
-	selfDisplay();
+	static uint8_t init_flag = 0;
+	if(init_flag == 0)
+	{
+		init_flag = 1;
+		clear_lcd();
+	}
+	test();
+	// display();
+	// selfDisplay();
 }
 
 #endif // (USER_TYPE == Example)

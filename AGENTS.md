@@ -128,6 +128,13 @@
 - **编 Example（示例/通用）机型**：`USER_TYPE` 保持 `Example`，并需把 `User\Example.c`、`User\Example.h` 加入 eide 工程的 User 源文件组（原 uvprojx 的 Device 组未含 `Example.c`，导致实现不进编译、链接 `undefined`）。`Example.c` 内部实现已被 `#if (USER_TYPE == Example)` 包裹，加入后即可提供 `WL_Recv`/`Activar`/`MainLogic`/`SelfChk_main`/`gSwiIconTab1/2` 等全部符号。
 - 编其它机型（如 `KXCAN_GLGJT312E_L3X` 拱架台车、`KXCAN_GLZYTC_L2X` 装药台车）：把对应机型 `.c` 加入工程，并让 `USER_TYPE` 与之匹配（或改 `USER_TYPE` 指向该机型）。
 
+**2026-10-23 补充（Keil 侧同样要补，且不止 Example.c）**
+- 用 Keil(uvprojx) 编译时报 9 个 `L6218E: Undefined symbol`（`SelfChk_main`/`Activar`/`WL_Recv`/`gSwiIconTab1/2` 等）：eide 的 `.eide/eide.yml` 一直含 `User/Example.c`，但 `HDH_YKQ_SPJ.uvprojx` 的 Device 组始终没加。已在 uvprojx 的 RAM/FLASH 两个目标 Device 组补入 `Example.c`、`KX119_QLG0312A_L4X.c`（与 eide 对齐，原 uvprojx 这两个都没有）。
+- 补入后又报 `Analog_Remap`/`di_map_int` undefined：定义在 `Src/Funtions.c`（声明在 `Src/Funtions.h`），eide 含、uvprojx 漏。已在 uvprojx 两个目标的 Source Code 组补入 `Funtions.c`。
+- 结论：**uvprojx 与 eide.yml 的文件列表是两套，增删 .c 必须两边同步**，否则哪个工具编译就缺哪个符号。
+- 连带修了 `User/Example.c` 的语法错误：`SelfChk_Proc` 里首个 `if(_BitV(vDI,16))` 被注释掉后，链条以裸 `else if` 开头，AC5 报 15 个 `#127: expected a statement`。已把第一个分支改为 `if(_BitV(vDI, 17))`（去掉 else，语义不变）。**注释掉 if 链首个分支时必须同步去掉下一个分支的 else。**
+- 另：命令行 `UV4.exe -b` 不等待返回，连续发起的两次编译会并发写同一输出目录，报 `C3904U: Could not open via file '.\flash\xxx.__i'`。必须用 `Start-Process -Wait` 等方式确保同一时刻只有一个 Keil 在编（Keil GUI 开着也会同样冲突）。
+
 ## 4b. 设备层（User）公共函数接口统一声明在 `User/_Device_config.h`
 
 为消除调用方（Src 层）缺声明导致的隐式声明/参数不匹配报错，两工程的 `User/_Device_config.h`

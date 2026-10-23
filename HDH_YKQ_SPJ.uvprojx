@@ -491,6 +491,11 @@
               <FileType>1</FileType>
               <FilePath>.\Src\wl.c</FilePath>
             </File>
+            <File>
+              <FileName>Funtions.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\Funtions.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -520,6 +525,16 @@
               <FileName>KXCAN_GLZYTC.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\User\KXCAN_GLZYTC.c</FilePath>
+            </File>
+            <File>
+              <FileName>Example.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\Example.c</FilePath>
+            </File>
+            <File>
+              <FileName>KX119_QLG0312A_L4X.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\KX119_QLG0312A_L4X.c</FilePath>
             </File>
             <File>
               <FileName>KX119_GLMZ_L2X3J.c</FileName>
@@ -1024,6 +1039,11 @@
               <FileType>1</FileType>
               <FilePath>.\Src\wl.c</FilePath>
             </File>
+            <File>
+              <FileName>Funtions.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\Src\Funtions.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1053,6 +1073,16 @@
               <FileName>KXCAN_GLZYTC.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\User\KXCAN_GLZYTC.c</FilePath>
+            </File>
+            <File>
+              <FileName>Example.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\Example.c</FilePath>
+            </File>
+            <File>
+              <FileName>KX119_QLG0312A_L4X.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\User\KX119_QLG0312A_L4X.c</FilePath>
             </File>
             <File>
               <FileName>KX119_GLMZ_L2X3J.c</FileName>
