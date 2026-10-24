@@ -226,3 +226,14 @@
 **注意 / 副作用**
 - 发射通路(KX_Send_joysend/KX_Send_joylogic)仍按全部 _ARM_USE=8 轴运行，`_ARM_STUDY_MASK` 只影响自学习校验/采集范围，不改变发射轴数；未接轴的发射值由各自默认/旧标定决定。
 - bit i ? `VKC_Send[i]` ? 万向轴 i ? `ADCRst[gArmUpTab[i]]`（gArmUpTab 随机型分支不同：KX 分支 ={10,6,15,7,12,13,0,5}）。
+
+## 9. 213遥控器连接后经常掉线：信号丢失立即断线，改为连续丢失2秒才判定离线（2026-10-24）
+**现象**：客户反馈 GLMZ213（213遥控器）连接之后经常掉线，掉线后要重按激活键才能恢复控制。
+**原因**：`Src/main.c` 的 1 秒任务（`gT0SFlg`，`Src/timer.c` 中 `gT0SCnt>=1000` 置位）里，只要过去 1 秒内一帧有效数据都没收到（`gWLRcvOk==0`；`Uart0_WL_Rcv()` 中校验错的帧提前 return、不计入），就**立即** `wl_reset()` 重置无线模块并 `stWLHad=0` 判定接收机离线；等信号恢复时因 `stWLHad==0` 又清 `gLaBaFlg`，用户必须重按激活键（见 §7）。瞬时丢帧、信号闪烁、或接收机 CAN 忙时连续漏回帧（接收机 `main.c` 仅 `gCanOvDly==0` 才回发无线帧，CAN 优先），都会凑出"整秒无数据"→ 误掉线。
+**修改（只改发射机 `FSJ_666/Src/main.c`，接收机未动）**
+- 新增 `#define _WL_LOST_DLY 2`（连续丢失秒数门限，即断线延时）与 `static unsigned char stWLLostDly`（信号丢失计时，秒）。
+- `gT0SFlg` 块：`gWLSingV==0` 时 `stWLLostDly++`（封顶 `_WL_LOST_DLY`），仅当 `stWLLostDly>=_WL_LOST_DLY`（连续 2 秒无信号）才 `wl_reset()` + `stWLHad=0`；收到数据时 `stWLLostDly=0`。掉线延时期间 `stWLHad` 保持 1，不清 `gLaBaFlg`，信号恢复无需重新激活。
+**效果**：<2 秒的信号中断不再断线、不重置无线模块、不需重激活；连续 2 秒无信号才按原逻辑判定离线（离线期间仍每秒 `wl_reset()` 促重连）。
+**注意 / 后续**
+- `gWLSingV`（信号格显、timer.c 红灯）仍为瞬时值、未加延时；要调断线延时只改 `_WL_LOST_DLY`。
+- 接收机侧 `gCommOvDly>500`（500ms 收不到有效帧就 `wl_reset()` 重置无线模块）本次未改；若实机仍偶发掉线，可评估将该门限也放宽到 2s，避免两侧互相重置导致级联中断。

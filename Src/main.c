@@ -20,6 +20,8 @@
 extern unsigned int gCanRFlg;
 extern unsigned char  gWLFlg;
 
+#define _WL_LOST_DLY 2			// 无线信号连续丢失多少秒后才判定接收机离线(断线延时，防瞬时丢帧/信号闪烁误掉线)
+
 unsigned char gPowerFlg0 = 0;
 unsigned int  gLCDBC = 0;		// 显示的通用背景色
 //unsigned char gTstStr[30];
@@ -154,6 +156,7 @@ unsigned int  gWLRcvs = 0;
 unsigned int  gWLRcvOk = 0;
 unsigned int  gJTDly = 0;
 static unsigned char stWLHad = 0;		// 接收机上一秒是否在线(用于掉线边沿检测)
+static unsigned char stWLLostDly = 0;	// 无线信号丢失计时(秒)，连续丢失达 _WL_LOST_DLY 才判定离线
 
 int main( void )
 {
@@ -304,11 +307,19 @@ int main( void )
 			T0S_Prog();
 			if(gWLSingV == 0)
 			{
-				wl_reset();
-				stWLHad = 0;		// 标记接收机离线
+				//// 本秒未收到接收机数据：连续丢失 _WL_LOST_DLY 秒后才判定离线，
+				//// 瞬时丢帧/信号闪烁不立即断线(不重置无线模块、恢复后无需重新激活)
+				if(stWLLostDly < _WL_LOST_DLY)
+					stWLLostDly++;
+				if(stWLLostDly >= _WL_LOST_DLY)
+				{
+					wl_reset();
+					stWLHad = 0;		// 标记接收机离线
+				}
 			}
 			else
 			{
+				stWLLostDly = 0;		// 收到数据，清除信号丢失计时
 				// 接收机本秒刚从离线变为在线(初次上电连接 或 掉线重连)：
 				// 清除激活态，禁止自动连接，须重新按激活键(或强制激活)才能恢复控制
 				if(stWLHad == 0)
