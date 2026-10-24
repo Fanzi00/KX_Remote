@@ -20,7 +20,7 @@
 extern unsigned int gCanRFlg;
 extern unsigned char  gWLFlg;
 
-#define _WL_LOST_DLY 2			// 无线信号连续丢失多少秒后才判定接收机离线(断线延时，防瞬时丢帧/信号闪烁误掉线)
+#define _WL_LOST_DLY 1			// 无线信号连续丢失多少秒后才判定接收机离线(断线延时1s，防瞬时丢帧/信号闪烁误掉线)
 
 unsigned char gPowerFlg0 = 0;
 unsigned int  gLCDBC = 0;		// 显示的通用背景色
@@ -320,11 +320,7 @@ int main( void )
 			else
 			{
 				stWLLostDly = 0;		// 收到数据，清除信号丢失计时
-				// 接收机本秒刚从离线变为在线(初次上电连接 或 掉线重连)：
-				// 清除激活态，禁止自动连接，须重新按激活键(或强制激活)才能恢复控制
-				if(stWLHad == 0)
-					gLaBaFlg = 0;
-				stWLHad = 1;		// 标记接收机在线
+				stWLHad = 1;		// 标记接收机在线（对齐标准机：掉线后自动重连，不清除激活态）
 			}
 		}
 		// 收到CAN数据
