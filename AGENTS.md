@@ -211,6 +211,7 @@
 - Bug: after RX drops and reconnects, TX auto-connects because gLaBaFlg was not cleared.
 - Fix: Src/main.c gT0SFlg block: whenever RX transitions offline->online (gWLSingV>0 while stWLHad was 0; covers both reconnect-after-drop AND RX powered-on later after TX already activated) clear gLaBaFlg=0; TX will NOT auto-connect, user must press activate key or force-activate. Online-only activation (RX already up when key pressed) is not disturbed.
 - Force-activate: added to all User/*.c Activar(): F5~F8 long-press 6s (forceDly counts to 6000, DI_Scan 1ms tick) sets gLaBaFlg=1 bypassing self-check. L2X3J has no F5~F8, uses F1~F4.
+- 关闭自动重连，掉线后必须手动激活（2026-10-24 修订，`Src/main.c` gT0S_Prog 分支）：`gWLSingV==0`（本秒未收到任何有效接收机回帧）时累计 `stWLLostDly`，**连续丢满 `_WL_LOST_DLY`(=2s) 才清 `gLaBaFlg = 0`**（在 `stWLLostDly >= _WL_LOST_DLY` 分支内显式清除；`wl_reset()` 本身只复位无线模块 IO、不清激活态）。即：瞬时(<2s)丢帧不清激活态、可自动重连；持续≥2s 掉线才清激活态，恢复后须手动重新激活（按 F3~F8 或强制激活 6s）。撤销 534cdca「对齐标准机、掉线后保持激活态自动重连」的做法。
 
 ## 8. 主页面(Disp_mainSPJ)显示优化：静态文字进页面只画一次，数值实时刷新（2026-10-24）
 

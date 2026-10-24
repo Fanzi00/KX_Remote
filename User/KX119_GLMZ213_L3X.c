@@ -94,7 +94,7 @@ void Activar()
     // gDIBitV 位映射已按《213遥控器测试结果》确认：16=电机 17=钻臂 18=锚杆 19=吊篮 20~23=F5~F8
 
     // 正常激活：F3~F8 任一按下且自检通过(gSelfChkMask==0)
-    if(F.F3 || F.F4 || F.F5 || F.F6 || F.F7 || F.F8)
+    if(F.F5 || F.F6 || F.F7 || F.F8)
     {
         if(gSelfChkMask == 0)
             gLaBaFlg = 1;

@@ -307,20 +307,20 @@ int main( void )
 			T0S_Prog();
 			if(gWLSingV == 0)
 			{
-				//// 本秒未收到接收机数据：连续丢失 _WL_LOST_DLY 秒后才判定离线，
-				//// 瞬时丢帧/信号闪烁不立即断线(不重置无线模块、恢复后无需重新激活)
+				//// 本秒未收到接收机数据：累计丢失时长，连续丢满 _WL_LOST_DLY 秒才清激活态
 				if(stWLLostDly < _WL_LOST_DLY)
 					stWLLostDly++;
 				if(stWLLostDly >= _WL_LOST_DLY)
 				{
 					wl_reset();
+					gLaBaFlg = 0;		// 连续丢满 _WL_LOST_DLY 秒才清激活态，恢复后需手动重新激活（关闭自动重连）
 					stWLHad = 0;		// 标记接收机离线
 				}
 			}
 			else
 			{
 				stWLLostDly = 0;		// 收到数据，清除信号丢失计时
-				stWLHad = 1;		// 标记接收机在线（对齐标准机：掉线后自动重连，不清除激活态）
+				stWLHad = 1;		// 标记接收机在线（已关闭自动重连：掉线后需手动重新激活）
 			}
 		}
 		// 收到CAN数据
