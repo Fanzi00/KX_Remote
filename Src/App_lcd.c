@@ -240,8 +240,12 @@ void Disp_mainSPJ(void)
 	}											//  moment_percentage
 	if((gLcdFresh == 1)||(gDataFresh == 1))
 	{
+		static unsigned char stEnterCnt = 0;
 		if(gLcdFresh == 1)
+		{
 			gLcdFresh = 0;
+			stEnterCnt = 3;		// 进页面首帧：本帧全量绘制（静态文字只画一次）
+		}
 		if(gDataFresh == 1)
 			gDataFresh = 0;				   
 			LCD_Set_Color(COLOR_BLUE_,-1);
@@ -257,6 +261,11 @@ void Disp_mainSPJ(void)
 
 #if 1
 	#if 1
+	if(stEnterCnt > 0)
+	{
+		stEnterCnt--;
+		MainLogic_Enter();
+	}
 	MainLogic();
 	#else
 	static uint8_t swi = 0; // 0表示凿岩界面，1表示立拱界面

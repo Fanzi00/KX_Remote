@@ -43,6 +43,7 @@ uint8_t showWarn(uint32_t t);
 const char* SelfChk_Str(uint32_t mask);   // 自检异常描述（错误码见 SelfChk_Proc）
 void clear_lcd(void);
 void MainLogic(void);
+void MainLogic_Enter(void);	// 进页面时调用一次：画完整静态文字 + 数值（标签仅绘制一次）
 void SelfChk_main(void);    // 上电自检状态机：10ms 节拍(main.c)周期调用；按《213测试结果》逐项检查开关/手柄
 void Activar(void);
 void selfDisplay(void);

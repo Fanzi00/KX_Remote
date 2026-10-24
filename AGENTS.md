@@ -211,6 +211,28 @@
 - Bug: after RX drops and reconnects, TX auto-connects because gLaBaFlg was not cleared.
 - Fix: Src/main.c gT0SFlg block: whenever RX transitions offline->online (gWLSingV>0 while stWLHad was 0; covers both reconnect-after-drop AND RX powered-on later after TX already activated) clear gLaBaFlg=0; TX will NOT auto-connect, user must press activate key or force-activate. Online-only activation (RX already up when key pressed) is not disturbed.
 - Force-activate: added to all User/*.c Activar(): F5~F8 long-press 6s (forceDly counts to 6000, DI_Scan 1ms tick) sets gLaBaFlg=1 bypassing self-check. L2X3J has no F5~F8, uses F1~F4.
+
+## 8. 主页面(Disp_mainSPJ)显示优化：静态文字进页面只画一次，数值实时刷新（2026-10-24）
+
+**问题**
+213 发射机 `User/KX119_GLMZ213_L3X.c` 的 `display()` 每 200ms 屏刷都把全部标签文字+单位+数值全量重绘（约 30 条文字 + 12 个数值）。
+主循环被重显示拖住，与单帧 UART 接收（uart.c 仅 64 字节缓冲 + 单标志 `gUart0RcvFlg`，`Uart0_WL_Rcv` 一次只解一帧并 `UART0Count=0`）叠加，
+偶发丢失无线回帧 → `gWLSingV` 在 5~9 波动 → 屏幕信号格 2?3 跳。标准机 `BRC_T_ST` 显示轻，故稳。
+
+**解决方法（拆静态/动态绘制）**
+- `display()` 保留全量绘制；新增 `display_static()`（只画标签+单位）、`display_dynamic()`（只刷动态数值：模式值/各路 Intx/水流量开关）。
+- `MainLogic()`（每帧）改调 `display_dynamic()` + `selfDisplay()`。
+- 新增 `MainLogic_Enter()`（进页面首帧 `gLcdFresh==1` 时由 `Disp_mainSPJ` 调用）：调一次 `display()` 全量绘制（静态文字只此一次）。
+- `User/_Device_config.h` 增加 `void MainLogic_Enter(void);` 声明。
+- `Src/App_lcd.c` 的 `Disp_mainSPJ`：`if((gLcdFresh==1)||(gDataFresh==1))` 块内捕获首帧 `vEnter`，首帧 `MainLogic_Enter()`、其余 `MainLogic()`。
+- 注意：`Disp_GJ`（臂架界面）与 `Disp_mainSPJ` 进页面块结构完全克隆，但 `Disp_GJ` 不调 `MainLogic`（用 `remote_18c`），故仅改 `Disp_mainSPJ` 体内（用其独有 `LCD_Set_Color(COLOR_BLUE_,-1)` 锚定），不要把 `MainLogic_Enter()` 加进克隆的进页面块（会误画到臂架页）。
+
+**效果 / 注意**
+- 静态文字仅进页面绘制一次，数值每帧实时更新；屏刷负载显著下降，预期缓解信号格 2?3 跳动。
+- 数值 `LCD_Disp_Intx(...,5)` 依赖底层按固定宽度清格；若某数值位数减少出现残影，需在 `display_dynamic` 中先清数值格再画。
+- 验证：刷机后对比 213 与标准机 `gWLSingV` 实时值，应更接近标准机（稳定 3 格）。
+- 修正（2026-10-24）：单次 `display()` 在 `LCD_Disp_PIC(31)` 大图光栅之后调用会被 LCD 模块丢弃一部分（实测只画到“孔数:”之后就断了），所以进页面**连续 3 帧**调用 `display_static()`（由 `Disp_mainSPJ` 内 `static stEnterCnt` 控制：进页面置 3，每帧 >0 则画静态并自减），3 帧后再只 `display_dynamic()`。静态文字只在进页面画一次（3 帧内画全），数值每帧实时刷新。
+
 - GLMZ213_L3X already had force-activate; GLZYTC/GLGJT312E/Example/QLG0312A/L2X3J added now.
 
 ## 8. 自学习通道选择接口 `_ARM_STUDY_MASK`（2026-10-21, 所有遥控器通用）

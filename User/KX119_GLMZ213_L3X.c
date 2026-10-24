@@ -303,6 +303,83 @@ static const uint8_t margL = 10;       // 左边距
 static const uint8_t margT = 5;		   // 上边距
 static const uint8_t Title = 30; // 第一行的高度
 
+// 动态数值：实时刷新（静态标签进页面已由 display() 画过，这里只刷数值，降低每帧屏刷负载）
+void display_dynamic(void)
+{
+    uint8_t mode = KX_119_recv_dis.data[0].u8Data[0];
+    uint8_t temp= 20; // 补偿
+    LCD_Set_Color(COLOR_WHITE_, -1);
+    // 模式值
+    if(_BitV(mode, 0))
+        LCD_Disp_Txt(FONT_16, S_WIDTH/2-(16*4+8*1)/2-temp+(16*2+8), margT, (uchar*)"钻臂");
+    else if(_BitV(mode, 1))
+        LCD_Disp_Txt(FONT_16, S_WIDTH/2-(16*4+8*1)/2-temp+(16*2+8), margT, (uchar*)"锚杆");
+    else if(_BitV(mode, 2))
+        LCD_Disp_Txt(FONT_16, S_WIDTH/2-(16*4+8*1)/2-temp+(16*2+8), margT, (uchar*)"吊篮");
+    else
+        LCD_Disp_Txt(FONT_16, S_WIDTH/2-(16*4+8*1)/2-temp+(16*2+8), margT, (uchar*)"  --");
+
+    LCD_Set_Color(COLOR_YELLW_, -1);
+    // 左列数值
+    LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*0, KX_119_recv_dis.data[1].u16Data, 5); //回转压力
+    LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*1, KX_119_recv_dis.data[2].u16Data, 5); //冲击压力
+    LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*2, KX_119_recv_dis.data[3].u16Data, 5); //推进压力
+    LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*3, KX_119_recv_dis.data[9].u16Data, 5); // 注浆压力
+    LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*4, KX_119_recv_dis.data[4].u8Data[0], 5); // 润滑气压
+    LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*5, KX_119_recv_dis.data[0].u8Data[1], 5); // 水压
+    // 右列数值
+    LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*0, KX_119_recv_dis.data[5].u16Data, 5);
+    LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*1, KX_119_recv_dis.data[6].u16Data, 5);
+    LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*2, KX_119_recv_dis.data[4].u8Data[1], 3);
+    LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*3, KX_119_recv_dis.data[7].u16Data, 5);
+    LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*4, KX_119_recv_dis.data[8].u16Data, 5);
+    LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*5, KX_119_recv_dis.data[10].u16Data, 5);
+    // 水流量开关
+    if(_BitV(mode, 3))
+        LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR+16*5+8, Title+high*6, (uchar*)"打开");
+    else
+        LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR+16*5+8, Title+high*6, (uchar*)"关闭");
+}
+
+// 静态文字：进页面时绘制（标签 + 单位），由调用方连画 3 帧确保画全（单帧 LCD 画不全）
+void display_static(void)
+{
+    uint8_t temp= 20; // 补偿
+    LCD_Set_Color(COLOR_WHITE_, -1);
+    // 模式标签
+    LCD_Disp_Txt(FONT_16, S_WIDTH/2-(16*4+8*1)/2-temp, margT, (uchar*)"模式:");
+    // 左列
+    LCD_Disp_Txt(FONT_16, margL, Title+high*0, (uchar*)"回转压力:");
+    LCD_Disp_Txt(FONT_16, margL, Title+high*1, (uchar*)"冲击压力:");
+    LCD_Disp_Txt(FONT_16, margL, Title+high*2, (uchar*)"推进压力:");
+    LCD_Disp_Txt(FONT_16, margL, Title+high*3, (uchar*)"注浆压力:");
+    LCD_Disp_Txt(FONT_16, margL, Title+high*4, (uchar*)"润滑气压:");
+    LCD_Disp_Txt(FONT_16, margL, Title+high*5, (uchar*)"水压:");
+
+    LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*0, (uchar*)"bar");
+    LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*1, (uchar*)"bar");
+    LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*2, (uchar*)"bar");
+    LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*3, (uchar*)"Mpa");
+    LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*4, (uchar*)"bar");
+    LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*5, (uchar*)"bar");
+
+    // 右列
+    LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR, Title+high*0, (uchar*)"预应力:");
+    LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR, Title+high*1, (uchar*)"锁定扭矩:");
+    LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR, Title+high*2, (uchar*)"孔数:");
+    LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR, Title+high*3, (uchar*)"钻孔深度:");
+    LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR, Title+high*4, (uchar*)"锚杆深度:");
+    LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR, Title+high*5, (uchar*)"注浆量:");
+    LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR, Title+high*6, (uchar*)"水流量开关:");
+
+    LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR + 16*4+8*6, Title+high*0, (uchar*)"kN");
+    LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR + 16*4+8*6, Title+high*1, (uchar*)"Nm");
+    LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR + 16*4+8*6, Title+high*2, (uchar*)"个");
+    LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR + 16*4+8*6, Title+high*3, (uchar*)"mm");
+    LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR + 16*4+8*6, Title+high*4, (uchar*)"mm");
+    LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR + 16*4+8*6, Title+high*5, (uchar*)"L");
+}
+
 // 显示车状态反馈 0x220 / 0x221 / 0x222
 void display()
 {
@@ -334,13 +411,13 @@ void display()
 	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*4, (uchar*)"bar");
 	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*5, (uchar*)"bar");
 
-	LCD_Set_Color(COLOR_YELLW_, -1);
-    LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*0, KX_119_recv_dis.data[1].u16Data, 5); //回转压力
-    LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*1, KX_119_recv_dis.data[2].u16Data, 5); //冲击压力
-    LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*2, KX_119_recv_dis.data[3].u16Data, 5); //推进压力
-	LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*3, KX_119_recv_dis.data[9].u16Data, 5); // 注浆压力
-	LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*4, KX_119_recv_dis.data[4].u8Data[0], 5); // 润滑气压
-	LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*5, KX_119_recv_dis.data[0].u8Data[1], 5); // 水压
+	// LCD_Set_Color(COLOR_YELLW_, -1);
+    // LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*0, KX_119_recv_dis.data[1].u16Data, 5); //回转压力
+    // LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*1, KX_119_recv_dis.data[2].u16Data, 5); //冲击压力
+    // LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*2, KX_119_recv_dis.data[3].u16Data, 5); //推进压力
+	// LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*3, KX_119_recv_dis.data[9].u16Data, 5); // 注浆压力
+	// LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*4, KX_119_recv_dis.data[4].u8Data[0], 5); // 润滑气压
+	// LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*5, KX_119_recv_dis.data[0].u8Data[1], 5); // 水压
 
     // 右列
     LCD_Set_Color(COLOR_WHITE_, -1);
@@ -359,13 +436,13 @@ void display()
 	LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR + 16*4+8*6, Title+high*4, (uchar*)"mm");
 	LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR + 16*4+8*6, Title+high*5, (uchar*)"L");
 
-	LCD_Set_Color(COLOR_YELLW_, -1);
-    LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*0, KX_119_recv_dis.data[5].u16Data, 5);
-    LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*1, KX_119_recv_dis.data[6].u16Data, 5);
-    LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*2, KX_119_recv_dis.data[4].u8Data[1], 3);
-    LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*3, KX_119_recv_dis.data[7].u16Data, 5);
-    LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*4, KX_119_recv_dis.data[8].u16Data, 5);
-    LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*5, KX_119_recv_dis.data[10].u16Data, 5);
+	// LCD_Set_Color(COLOR_YELLW_, -1);
+    // LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*0, KX_119_recv_dis.data[5].u16Data, 5);
+    // LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*1, KX_119_recv_dis.data[6].u16Data, 5);
+    // LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*2, KX_119_recv_dis.data[4].u8Data[1], 3);
+    // LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*3, KX_119_recv_dis.data[7].u16Data, 5);
+    // LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*4, KX_119_recv_dis.data[8].u16Data, 5);
+    // LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*5, KX_119_recv_dis.data[10].u16Data, 5);
 	if(_BitV(mode, 3))
 		LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR+16*5+8, Title+high*6, (uchar*)"打开");
 	else
@@ -389,11 +466,17 @@ void selfDisplay(void)
     }
 }
 
-// 主要逻辑
+// 主要逻辑：每帧刷新只更新动态数值
 void MainLogic(void)
 {
-    display();
+    display_dynamic();
     selfDisplay();
+}
+
+// 进页面首 3 帧调用：只画静态文字（单帧 LCD 画不全，由 Disp_mainSPJ 连画 3 次）
+void MainLogic_Enter(void)
+{
+    display_static();
 }
 
 #endif // (USER_TYPE == KX119_GLMZ213_L3X)
