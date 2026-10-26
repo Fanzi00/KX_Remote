@@ -142,7 +142,8 @@ void Straight_handle(void); // 直线手柄
 
 #define SWI_ICON_EN 1
 #define _XN_LiuL    1 // 是否有旋钮
-#define _SELF_CHK_EN  // 开启自检功能
+//#define _SELF_CHK_EN  // 自检功能临时关闭（2026-10-26 排查：213 信号 3→2 波动是否由自检引起）。若波动消失→证实自检所致；若仍在→排除自检。排查完请恢复此行。
+
 
 #endif // #if (USER_TYPE == KX119_GLMZ213_L3X)
 

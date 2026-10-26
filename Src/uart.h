@@ -32,6 +32,16 @@
 
 #define UARTBUFSIZE		0x40
 
+/* UART0 接收改为环形缓冲（替换原线性 UART0Buffer/UART0Count，避免满时整缓冲清零丢帧） */
+#define UART0_RXBUF_SIZE	256u
+#define UART0_RXBUF_MASK	(UART0_RXBUF_SIZE - 1u)
+#define UART0_RX_GET(off)	UART0RxBuf[((UART0RxTail) + (off)) & UART0_RXBUF_MASK]
+#define UART0_RX_PUSH(b)	do {														\
+								uint16_t _n = (UART0RxHead + 1) & UART0_RXBUF_MASK;		\
+								if (_n == UART0RxTail) gUart0RxOver++;					\
+								else { UART0RxBuf[UART0RxHead] = (b); UART0RxHead = _n; }	\
+							} while(0)
+
 
 /***************************************************************************************
 *
@@ -53,9 +63,13 @@ extern uint32_t  gUart1RcvFlg;
 
 extern volatile uint32_t UART0Status, UART1Status;
 extern volatile uint8_t UART0TxEmpty, UART1TxEmpty;
-extern volatile uint8_t UART0Buffer[UARTBUFSIZE], UART1Buffer[UARTBUFSIZE];
-extern volatile uint32_t UART0Count, UART1Count;
+extern volatile uint8_t  UART1Buffer[UARTBUFSIZE];
+extern volatile uint32_t UART1Count;
 extern volatile uint32_t UART0RcvDly, UART1RcvDly;
+extern volatile uint8_t  UART0RxBuf[UART0_RXBUF_SIZE];
+extern volatile uint16_t UART0RxHead;
+extern volatile uint16_t UART0RxTail;
+extern volatile uint32_t gUart0RxOver;		// 诊断：环形缓冲满时丢弃的字节数
 
 
 uint32_t UARTInit( uint32_t portNum, uint32_t Baudrate );
