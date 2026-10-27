@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <string.h>
 #include "Functions.h" // 本文件函数原型 + 差分引擎接口(DiffRefresh.h)
-
+#include "APP_DGUS.h"
 /* ================================================================
  * 分段线性重映射（uint16_t 全参数版 + 模拟量输入为指针）
  *
@@ -167,5 +167,3 @@ __weak void ADC_Correction(void)
 __weak void DI_Correction(void)
 {
 }
-
-

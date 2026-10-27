@@ -305,6 +305,10 @@ static const uint8_t Title = 30; // 第一行的高度
 
 // 差分刷新：调用方持有 gSPJDiff(DiffCtx)。进页面由 MainLogic_Enter() 置 force=2，
 // 首 2 次走整页全量；其后只发变化字段。数值末参 thr>0 时仅 |Δ|>=thr 才发，可抑制微跳动。
+// 调试切换：下方 #define DEBUG 时，display_dynamic 直接全量刷屏（无差分），用于和差分版本对比测试；
+// 注释掉 DEBUG 则走差分刷新。
+#define DEBUG   // ← 注释此行=差分刷新；保留=实时数据每帧全量刷新(无差分)调试
+
 static DiffCtx gSPJDiff;
 
 void display_dynamic(void)
@@ -313,17 +317,40 @@ void display_dynamic(void)
     uint8_t temp= 20; // 补偿
     uint8_t water = _BitV(mode, 3);
     const char* m;
-	uint8_t index = 0;
 
-	LCD_Set_Color(COLOR_WHITE_, -1);
-    // 模式文本（变化才发）
+    LCD_Set_Color(COLOR_WHITE_, -1);
+    // 模式文本
     if(_BitV(mode, 0))      m = "钻臂";
     else if(_BitV(mode, 1)) m = "锚杆";
     else if(_BitV(mode, 2)) m = "吊篮";
     else                    m = "  --";
+    LCD_Set_Color(COLOR_YELLW_, -1);
+
+#ifdef DEBUG
+    // 调试：实时数据每帧全量刷新（直接刷屏，无差分），用于对比测试
+    LCD_Disp_Txt(FONT_16, S_WIDTH/2-(16*4+8*1)/2-temp+(16*2+8), margT, (unsigned char*)m);
+
+    // 左列数值
+    LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*0, KX_119_recv_dis.data[1].u16Data,  5);
+    LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*1, KX_119_recv_dis.data[2].u16Data,  5);
+    LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*2, KX_119_recv_dis.data[3].u16Data,  5);
+    LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*3, KX_119_recv_dis.data[9].u16Data,  5);
+    LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*4, KX_119_recv_dis.data[4].u8Data[0], 5);
+    LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*5, KX_119_recv_dis.data[0].u8Data[1], 5);
+    // 右列数值
+    LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*0, KX_119_recv_dis.data[5].u16Data,  5);
+    LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*1, KX_119_recv_dis.data[6].u16Data,  5);
+    LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*2, KX_119_recv_dis.data[4].u8Data[1], 3);
+    LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*3, KX_119_recv_dis.data[7].u16Data,  5);
+    LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*4, KX_119_recv_dis.data[8].u16Data,  5);
+    LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*5, KX_119_recv_dis.data[10].u16Data, 5);
+    // 水流量开关
+    LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR+16*5+8, Title+high*6, (unsigned char*)(water ? "打开" : "关闭"));
+#else
+    uint8_t index = 0;
+    // 差分刷新（只发变化字段）
     Diff_Txt(&gSPJDiff, index++, S_WIDTH/2-(16*4+8*1)/2-temp+(16*2+8), margT, m, FONT_16);
 
-    LCD_Set_Color(COLOR_YELLW_, -1);
     // 左列数值（末参=阈值：0 表示任意变化即发；如某值爱抖，改成 1~2 即可抑制）
     Diff_Int(&gSPJDiff, index++,  margL+16*4+8, Title+high*0, KX_119_recv_dis.data[1].u16Data,  5, FONT_16, 0);
     Diff_Int(&gSPJDiff, index++,  margL+16*4+8, Title+high*1, KX_119_recv_dis.data[2].u16Data,  5, FONT_16, 0);
@@ -342,6 +369,7 @@ void display_dynamic(void)
     Diff_Txt(&gSPJDiff, index++, S_WIDTH/2 + margR+16*5+8, Title+high*6, water ? "打开" : "关闭", FONT_16);
 
     Diff_EndFrame(&gSPJDiff);
+#endif
 }
 
 // 静态文字：进页面时绘制（标签 + 单位），由调用方连画 2 帧确保画全（单帧 LCD 画不全）
@@ -383,75 +411,6 @@ void display_static(void)
     LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR + 16*4+8*6, Title+high*5, (uchar*)"L");
 }
 
-// 显示车状态反馈 0x220 / 0x221 / 0x222
-void display()
-{
-    uint8_t mode = KX_119_recv_dis.data[0].u8Data[0];
-    LCD_Set_Color(COLOR_WHITE_, -1);
-	uint8_t temp= 20; // 补偿
-    // 左列
-    LCD_Disp_Txt(FONT_16, S_WIDTH/2-(16*4+8*1)/2-temp, margT, (uchar*)"模式:");
-    if(_BitV(mode, 0))
-        LCD_Disp_Txt(FONT_16, S_WIDTH/2-(16*4+8*1)/2-temp+(16*2+8), margT, (uchar*)"钻臂");
-    else if(_BitV(mode, 1))
-        LCD_Disp_Txt(FONT_16, S_WIDTH/2-(16*4+8*1)/2-temp+(16*2+8), margT, (uchar*)"锚杆");
-    else if(_BitV(mode, 2))
-        LCD_Disp_Txt(FONT_16, S_WIDTH/2-(16*4+8*1)/2-temp+(16*2+8), margT, (uchar*)"吊篮");
-    else
-        LCD_Disp_Txt(FONT_16, S_WIDTH/2-(16*4+8*1)/2-temp+(16*2+8), margT, (uchar*)"  --");
-
-    LCD_Disp_Txt(FONT_16, margL, Title+high*0, (uchar*)"回转压力:");
-	LCD_Disp_Txt(FONT_16, margL, Title+high*1, (uchar*)"冲击压力:");
-	LCD_Disp_Txt(FONT_16, margL, Title+high*2, (uchar*)"推进压力:");
-	LCD_Disp_Txt(FONT_16, margL, Title+high*3, (uchar*)"注浆压力:");
-	LCD_Disp_Txt(FONT_16, margL, Title+high*4, (uchar*)"润滑气压:");
-	LCD_Disp_Txt(FONT_16, margL, Title+high*5, (uchar*)"水压:");
-
-	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*0, (uchar*)"bar");
-	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*1, (uchar*)"bar");
-	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*2, (uchar*)"bar");
-	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*3, (uchar*)"Mpa");
-	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*4, (uchar*)"bar");
-	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*5, (uchar*)"bar");
-
-	// LCD_Set_Color(COLOR_YELLW_, -1);
-    // LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*0, KX_119_recv_dis.data[1].u16Data, 5); //回转压力
-    // LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*1, KX_119_recv_dis.data[2].u16Data, 5); //冲击压力
-    // LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*2, KX_119_recv_dis.data[3].u16Data, 5); //推进压力
-	// LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*3, KX_119_recv_dis.data[9].u16Data, 5); // 注浆压力
-	// LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*4, KX_119_recv_dis.data[4].u8Data[0], 5); // 润滑气压
-	// LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*5, KX_119_recv_dis.data[0].u8Data[1], 5); // 水压
-
-    // 右列
-    LCD_Set_Color(COLOR_WHITE_, -1);
-    LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR, Title+high*0, (uchar*)"预应力:");
-	LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR, Title+high*1, (uchar*)"锁定扭矩:");
-	LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR, Title+high*2, (uchar*)"孔数:");
-	LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR, Title+high*3, (uchar*)"钻孔深度:");
-	LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR, Title+high*4, (uchar*)"锚杆深度:");
-	LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR, Title+high*5, (uchar*)"注浆量:");
-	LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR, Title+high*6, (uchar*)"水流量开关:");
-	
-	LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR + 16*4+8*6, Title+high*0, (uchar*)"kN");
-	LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR + 16*4+8*6, Title+high*1, (uchar*)"Nm");
-	LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR + 16*4+8*6, Title+high*2, (uchar*)"个");
-	LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR + 16*4+8*6, Title+high*3, (uchar*)"mm");
-	LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR + 16*4+8*6, Title+high*4, (uchar*)"mm");
-	LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR + 16*4+8*6, Title+high*5, (uchar*)"L");
-
-	// LCD_Set_Color(COLOR_YELLW_, -1);
-    // LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*0, KX_119_recv_dis.data[5].u16Data, 5);
-    // LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*1, KX_119_recv_dis.data[6].u16Data, 5);
-    // LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*2, KX_119_recv_dis.data[4].u8Data[1], 3);
-    // LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*3, KX_119_recv_dis.data[7].u16Data, 5);
-    // LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*4, KX_119_recv_dis.data[8].u16Data, 5);
-    // LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*5, KX_119_recv_dis.data[10].u16Data, 5);
-	if(_BitV(mode, 3))
-		LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR+16*5+8, Title+high*6, (uchar*)"打开");
-	else
-		LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR+16*5+8, Title+high*6, (uchar*)"关闭");
-
-}
 // 自检异常提示：gSelfChkMask!=0 时在状态页显示红字（与 GLZYTC 同款）
 void selfDisplay(void)
 {
@@ -469,27 +428,13 @@ void selfDisplay(void)
     }
 }
 
-// 主要逻辑：每帧刷新只更新动态数值
-// 无线诊断计数显示（排查 213 信号掉格用）：每帧刷新，看帧到底丢在哪一层
-//   S=信号值(gWLSingV)        R=本秒实收帧数(gWLRcvOk)
-//   O=UART0环形缓冲溢出字节(gUart0RxOver)  C=帧校验失败(gWLRcvChkFail)  H=无有效帧头垃圾(gWLRcvHdrMiss)
-extern volatile uint32_t gUart0RxOver;   // 诊断：环形缓冲满时丢弃的字节数（uart.h 中声明）
-void Disp_WLDiag(void)
-{
-    char buf[40];
-    LCD_Set_Color(COLOR_WHITE_, -1);
-    snprintf((char*)buf, sizeof(buf), "S:%3u R:%3u", (unsigned int)gWLSingV, (unsigned int)gWLRcvOk);
-    LCD_Disp_Txt(FONT_16, margL, 206, (uchar*)buf);
-    snprintf((char*)buf, sizeof(buf), "O:%3u C:%3u H:%3u", (unsigned int)gUart0RxOver, (unsigned int)gWLRcvChkFail, (unsigned int)gWLRcvHdrMiss);
-    LCD_Disp_Txt(FONT_16, margL, 222, (uchar*)buf);
-}
 
 // 正常刷新：动态走差分（display_dynamic 内部 gForceFull>0 时强制整页全量）
 void MainLogic(void)
 {
     display_dynamic();
     selfDisplay();
-    Disp_WLDiag();
+    // Disp_WLDiag();
 }
 
 // 进页面调用：画静态标签，并请求整页全量刷新 2 次（低频率，由 App_lcd.c 的 swi%6 门控消耗）
