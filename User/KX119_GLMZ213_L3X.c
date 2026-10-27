@@ -307,7 +307,7 @@ static const uint8_t Title = 30; // 第一行的高度
 // 首 2 次走整页全量；其后只发变化字段。数值末参 thr>0 时仅 |Δ|>=thr 才发，可抑制微跳动。
 // 调试切换：下方 #define DEBUG 时，display_dynamic 直接全量刷屏（无差分），用于和差分版本对比测试；
 // 注释掉 DEBUG 则走差分刷新。
-#define DEBUG   // ← 注释此行=差分刷新；保留=实时数据每帧全量刷新(无差分)调试
+// #define DEBUG   // ← 注释此行=差分刷新；保留=实时数据每帧全量刷新(无差分)调试
 
 static DiffCtx gSPJDiff;
 
