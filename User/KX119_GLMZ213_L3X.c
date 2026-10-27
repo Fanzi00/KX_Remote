@@ -303,45 +303,48 @@ static const uint8_t margL = 10;       // 左边距
 static const uint8_t margT = 5;		   // 上边距
 static const uint8_t Title = 30; // 第一行的高度
 
-// 动态数值：实时刷新（静态标签进页面已由 display() 画过，这里只刷数值，降低每帧屏刷负载）
+// 差分刷新：调用方持有 gSPJDiff(DiffCtx)。进页面由 MainLogic_Enter() 置 force=2，
+// 首 2 次走整页全量；其后只发变化字段。数值末参 thr>0 时仅 |Δ|>=thr 才发，可抑制微跳动。
+static DiffCtx gSPJDiff;
+
 void display_dynamic(void)
 {
     uint8_t mode = KX_119_recv_dis.data[0].u8Data[0];
     uint8_t temp= 20; // 补偿
-    LCD_Set_Color(COLOR_WHITE_, -1);
-    // 模式值
-    if(_BitV(mode, 0))
-        LCD_Disp_Txt(FONT_16, S_WIDTH/2-(16*4+8*1)/2-temp+(16*2+8), margT, (uchar*)"钻臂");
-    else if(_BitV(mode, 1))
-        LCD_Disp_Txt(FONT_16, S_WIDTH/2-(16*4+8*1)/2-temp+(16*2+8), margT, (uchar*)"锚杆");
-    else if(_BitV(mode, 2))
-        LCD_Disp_Txt(FONT_16, S_WIDTH/2-(16*4+8*1)/2-temp+(16*2+8), margT, (uchar*)"吊篮");
-    else
-        LCD_Disp_Txt(FONT_16, S_WIDTH/2-(16*4+8*1)/2-temp+(16*2+8), margT, (uchar*)"  --");
+    uint8_t water = _BitV(mode, 3);
+    const char* m;
+	uint8_t index = 0;
+
+	LCD_Set_Color(COLOR_WHITE_, -1);
+    // 模式文本（变化才发）
+    if(_BitV(mode, 0))      m = "钻臂";
+    else if(_BitV(mode, 1)) m = "锚杆";
+    else if(_BitV(mode, 2)) m = "吊篮";
+    else                    m = "  --";
+    Diff_Txt(&gSPJDiff, index++, S_WIDTH/2-(16*4+8*1)/2-temp+(16*2+8), margT, m, FONT_16);
 
     LCD_Set_Color(COLOR_YELLW_, -1);
-    // 左列数值
-    LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*0, KX_119_recv_dis.data[1].u16Data, 5); //回转压力
-    LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*1, KX_119_recv_dis.data[2].u16Data, 5); //冲击压力
-    LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*2, KX_119_recv_dis.data[3].u16Data, 5); //推进压力
-    LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*3, KX_119_recv_dis.data[9].u16Data, 5); // 注浆压力
-    LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*4, KX_119_recv_dis.data[4].u8Data[0], 5); // 润滑气压
-    LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*5, KX_119_recv_dis.data[0].u8Data[1], 5); // 水压
+    // 左列数值（末参=阈值：0 表示任意变化即发；如某值爱抖，改成 1~2 即可抑制）
+    Diff_Int(&gSPJDiff, index++,  margL+16*4+8, Title+high*0, KX_119_recv_dis.data[1].u16Data,  5, FONT_16, 0);
+    Diff_Int(&gSPJDiff, index++,  margL+16*4+8, Title+high*1, KX_119_recv_dis.data[2].u16Data,  5, FONT_16, 0);
+    Diff_Int(&gSPJDiff, index++,  margL+16*4+8, Title+high*2, KX_119_recv_dis.data[3].u16Data,  5, FONT_16, 0);
+    Diff_Int(&gSPJDiff, index++,  margL+16*4+8, Title+high*3, KX_119_recv_dis.data[9].u16Data,  5, FONT_16, 0);
+    Diff_Int(&gSPJDiff, index++,  margL+16*4+8, Title+high*4, KX_119_recv_dis.data[4].u8Data[0], 5, FONT_16, 0);
+    Diff_Int(&gSPJDiff, index++,  margL+16*4+8, Title+high*5, KX_119_recv_dis.data[0].u8Data[1], 5, FONT_16, 0);
     // 右列数值
-    LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*0, KX_119_recv_dis.data[5].u16Data, 5);
-    LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*1, KX_119_recv_dis.data[6].u16Data, 5);
-    LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*2, KX_119_recv_dis.data[4].u8Data[1], 3);
-    LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*3, KX_119_recv_dis.data[7].u16Data, 5);
-    LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*4, KX_119_recv_dis.data[8].u16Data, 5);
-    LCD_Disp_Intx(FONT_16, S_WIDTH/2 + margR+16*4+8, Title+high*5, KX_119_recv_dis.data[10].u16Data, 5);
+    Diff_Int(&gSPJDiff, index++,  S_WIDTH/2 + margR+16*4+8, Title+high*0, KX_119_recv_dis.data[5].u16Data,  5, FONT_16, 0);
+    Diff_Int(&gSPJDiff, index++,  S_WIDTH/2 + margR+16*4+8, Title+high*1, KX_119_recv_dis.data[6].u16Data,  5, FONT_16, 0);
+    Diff_Int(&gSPJDiff, index++,  S_WIDTH/2 + margR+16*4+8, Title+high*2, KX_119_recv_dis.data[4].u8Data[1], 3, FONT_16, 0);
+    Diff_Int(&gSPJDiff, index++,  S_WIDTH/2 + margR+16*4+8, Title+high*3, KX_119_recv_dis.data[7].u16Data,  5, FONT_16, 0);
+    Diff_Int(&gSPJDiff, index++, S_WIDTH/2 + margR+16*4+8, Title+high*4, KX_119_recv_dis.data[8].u16Data,  5, FONT_16, 0);
+    Diff_Int(&gSPJDiff, index++, S_WIDTH/2 + margR+16*4+8, Title+high*5, KX_119_recv_dis.data[10].u16Data, 5, FONT_16, 0);
     // 水流量开关
-    if(_BitV(mode, 3))
-        LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR+16*5+8, Title+high*6, (uchar*)"打开");
-    else
-        LCD_Disp_Txt(FONT_16, S_WIDTH/2 + margR+16*5+8, Title+high*6, (uchar*)"关闭");
+    Diff_Txt(&gSPJDiff, index++, S_WIDTH/2 + margR+16*5+8, Title+high*6, water ? "打开" : "关闭", FONT_16);
+
+    Diff_EndFrame(&gSPJDiff);
 }
 
-// 静态文字：进页面时绘制（标签 + 单位），由调用方连画 3 帧确保画全（单帧 LCD 画不全）
+// 静态文字：进页面时绘制（标签 + 单位），由调用方连画 2 帧确保画全（单帧 LCD 画不全）
 void display_static(void)
 {
     uint8_t temp= 20; // 补偿
@@ -467,16 +470,33 @@ void selfDisplay(void)
 }
 
 // 主要逻辑：每帧刷新只更新动态数值
+// 无线诊断计数显示（排查 213 信号掉格用）：每帧刷新，看帧到底丢在哪一层
+//   S=信号值(gWLSingV)        R=本秒实收帧数(gWLRcvOk)
+//   O=UART0环形缓冲溢出字节(gUart0RxOver)  C=帧校验失败(gWLRcvChkFail)  H=无有效帧头垃圾(gWLRcvHdrMiss)
+extern volatile uint32_t gUart0RxOver;   // 诊断：环形缓冲满时丢弃的字节数（uart.h 中声明）
+void Disp_WLDiag(void)
+{
+    char buf[40];
+    LCD_Set_Color(COLOR_WHITE_, -1);
+    snprintf((char*)buf, sizeof(buf), "S:%3u R:%3u", (unsigned int)gWLSingV, (unsigned int)gWLRcvOk);
+    LCD_Disp_Txt(FONT_16, margL, 206, (uchar*)buf);
+    snprintf((char*)buf, sizeof(buf), "O:%3u C:%3u H:%3u", (unsigned int)gUart0RxOver, (unsigned int)gWLRcvChkFail, (unsigned int)gWLRcvHdrMiss);
+    LCD_Disp_Txt(FONT_16, margL, 222, (uchar*)buf);
+}
+
+// 正常刷新：动态走差分（display_dynamic 内部 gForceFull>0 时强制整页全量）
 void MainLogic(void)
 {
     display_dynamic();
     selfDisplay();
+    Disp_WLDiag();
 }
 
-// 进页面首 3 帧调用：只画静态文字（单帧 LCD 画不全，由 Disp_mainSPJ 连画 3 次）
+// 进页面调用：画静态标签，并请求整页全量刷新 2 次（低频率，由 App_lcd.c 的 swi%6 门控消耗）
 void MainLogic_Enter(void)
 {
     display_static();
+    Diff_PageEnter(&gSPJDiff);   // 进页面：请求整页全量 2 次（低频率下由 App_lcd.c 的 SPJ_REFRESH_DIV 门控消耗）
 }
 
 #endif // (USER_TYPE == KX119_GLMZ213_L3X)

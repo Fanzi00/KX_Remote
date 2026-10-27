@@ -6,10 +6,16 @@
 #include "app_lcd.h"
 #include "LPC17xx.h"
 #include "config.h"
-#include "Funtions.h"
+#include "API/DiffRefresh.h"
+#include "API/Functions.h"
 // 发射机屏幕尺寸：320*240
 #define S_HEIGHT 240
 #define S_WIDTH 320
+
+// ===================== 屏刷新频率（可按遥控器微调）=====================
+// 主循环每 SPJ_REFRESH_DIV 帧才刷一次屏；结合差分刷新(只发变化字段)：
+//   2≈5Hz、1≈10Hz、6=保守。调大=更省屏串口、更不抢无线；调小=显示更跟手。
+#define SPJ_REFRESH_DIV 4
 
 // 纽子开关图标配置表条目（数据表由各遥控器 .c 定义：gSwiIconTab1/第一排、gSwiIconTab2/第二排）
 // 注意: 第一排/第二排由调用处分别传入 stDIBitV1/stDIBitV2 作比较基准，故表内不再存 grp
@@ -142,7 +148,7 @@ void Straight_handle(void); // 直线手柄
 
 #define SWI_ICON_EN 1
 #define _XN_LiuL    1 // 是否有旋钮
-//#define _SELF_CHK_EN  // 自检功能临时关闭（2026-10-26 排查：213 信号 3→2 波动是否由自检引起）。若波动消失→证实自检所致；若仍在→排除自检。排查完请恢复此行。
+#define _SELF_CHK_EN  // 自检功能临时关闭（2026-10-26 排查：213 信号 3→2 波动是否由自检引起）。若波动消失→证实自检所致；若仍在→排除自检。排查完请恢复此行。
 
 
 #endif // #if (USER_TYPE == KX119_GLMZ213_L3X)

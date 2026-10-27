@@ -266,7 +266,12 @@ void Disp_mainSPJ(void)
 		stEnterCnt--;
 		MainLogic_Enter();
 	}
-	MainLogic();
+		static uint8_t swi = 0;
+	if(swi++ % SPJ_REFRESH_DIV == 0)
+	{
+		MainLogic();
+	}
+	
 	#else
 	static uint8_t swi = 0; // 0表示凿岩界面，1表示立拱界面
 	if(!_BitV(gDIBitV, 2) && !_BitV(gDIBitV, 3) && _BitV(gDIBitV, 9))// 切换到中臂时, 且处于凿岩模式

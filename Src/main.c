@@ -302,25 +302,30 @@ int main( void )
 		if(gT0SFlg)
 		{
 			gT0SFlg = 0;
-			gWLSingV = gWLRcvOk;
-			gWLRcvOk = 0;
-			T0S_Prog();
-			if(gWLSingV == 0)
 			{
-				//// 本秒未收到接收机数据：累计丢失时长，连续丢满 _WL_LOST_DLY 秒才清激活态
-				if(stWLLostDly < _WL_LOST_DLY)
-					stWLLostDly++;
-				if(stWLLostDly >= _WL_LOST_DLY)
+				unsigned int rawSing = gWLRcvOk;
+				// 信号格显示值低通平滑：帧数上升立即跟上，下降缓慢(~1/秒)，避免 RF 瞬时衰落导致信号格乱跳/误判掉线；掉线判定仍用原始值 rawSing，逻辑不变
+				if(rawSing >= gWLSingV)	gWLSingV = rawSing;
+				else if(gWLSingV > 0)	gWLSingV--;
+				gWLRcvOk = 0;
+				T0S_Prog();
+				if(rawSing == 0)
 				{
-					wl_reset();
-					gLaBaFlg = 0;		// 连续丢满 _WL_LOST_DLY 秒才清激活态，恢复后需手动重新激活（关闭自动重连）
-					stWLHad = 0;		// 标记接收机离线
+					//// 本秒未收到接收机数据：累计丢失时长，连续丢满 _WL_LOST_DLY 秒才清激活态
+					if(stWLLostDly < _WL_LOST_DLY)
+						stWLLostDly++;
+					if(stWLLostDly >= _WL_LOST_DLY)
+					{
+						wl_reset();
+						gLaBaFlg = 0;		// 连续丢满 _WL_LOST_DLY 秒才清激活态，恢复后需手动重新激活（关闭自动重连）
+						stWLHad = 0;		// 标记接收机离线
+					}
 				}
-			}
-			else
-			{
-				stWLLostDly = 0;		// 收到数据，清除信号丢失计时
-				stWLHad = 1;		// 标记接收机在线（已关闭自动重连：掉线后需手动重新激活）
+				else
+				{
+					stWLLostDly = 0;		// 收到数据，清除信号丢失计时
+					stWLHad = 1;		// 标记接收机在线（已关闭自动重连：掉线后需手动重新激活）
+				}
 			}
 		}
 		// 收到CAN数据
