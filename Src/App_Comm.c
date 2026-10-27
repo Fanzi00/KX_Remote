@@ -44,7 +44,6 @@ uchar Uart0_WL_Rcv(void)
 	uchar vPageNum = 0;
 	uchar vUStr[128];
 	uchar vCh = 0;
-	uchar vFrameLen = 0;
 //	uint  vIntD = 0;
 //	uchar vType = 0;
 
@@ -54,57 +53,37 @@ uchar Uart0_WL_Rcv(void)
 		return 0;
 	}		
 
-	while(1)
+	vULen = UART0Count;
+	for(i=0; i<vULen; i++)
 	{
-		//// 关 UART0 收中断，原子读取环形缓冲并移除一帧（ISR 只改 UART0RxHead，解析只改 UART0RxTail，互不踩踏）
-		NVIC_DisableIRQ(UART0_IRQn);
-		vULen = (uint8_t)((UART0RxHead - UART0RxTail) & UART0_RXBUF_MASK);
-		if(vULen == 0)
+		if(UART0Buffer[i] == UART_H1)
 		{
-			NVIC_EnableIRQ(UART0_IRQn);
-			break;
-		}
-		vFlg = 0xff;
-		for(i=0; i<vULen; i++)
-		{
-			if(UART0_RX_GET(i) == UART_H1)
+			if(UART0Buffer[i+1] == UART_H2)		 // 找到帧头
 			{
-				if((i+1 < vULen) && (UART0_RX_GET(i+1) == UART_H2))	 // 找到帧头
-				{
-					vFlg = i;
-					break;
-				}
-			}	 
+				vFlg = i;
+				break;
+			}
+		}	 
+	}
+//	Can_Prog_Send5(0x20);
+	if((vFlg + UART_LEN) > vULen)				// 接收数据的长度不够
+	{
+	//	UART0Count = 0;
+	//	for(i=0; i<24; i++)
+	//		UART0Buffer[i] = 0;
+		return 0;
 		}
-		if(vFlg == 0xff)					// 无帧头：缓冲里是垃圾，丢弃避免堆积
-		{
-			UART0RxTail = (UART0RxTail + vULen) & UART0_RXBUF_MASK;
-			gWLRcvHdrMiss++;
-			NVIC_EnableIRQ(UART0_IRQn);
-			break;
-		}
-		if((vULen - vFlg) < 3)				// 仅有帧头、尚未收到 LEN 字段，等下一批
-		{
-			NVIC_EnableIRQ(UART0_IRQn);
-			break;
-		}
-		//// 拷贝从帧头到缓冲末尾的全部字节（与原逻辑一致：vUStr[0]=H1，保证后续校验/解析不变）
-		for(i=0; i<(vULen - vFlg); i++)
-			vUStr[i] = UART0_RX_GET(vFlg + i);
-		//// 由帧内 LEN 字段得到真实帧长（帧 = H1 H2 LEN DT ... XOR CHK，共 LEN+2 字节）
-		vFrameLen = vUStr[2] + 2;
-		if((vFlg + vFrameLen) > vULen)			// 帧未收全（含垃圾LEN情形），保留缓冲等后续字节
-		{
-			NVIC_EnableIRQ(UART0_IRQn);
-			break;
-		}
-		//// 解析前先把本帧从环形缓冲原子移除（仍在关中断区内），ISR 随后可立即续写，避免并发错位
-		UART0RxTail = (UART0RxTail + vFlg + vFrameLen) & UART0_RXBUF_MASK;
-		NVIC_EnableIRQ(UART0_IRQn);
-		//// 以下沿用原单帧解析逻辑（基于 vUStr 副本，中断已开，耗时操作安全）
+
+	for(i=0; i<vULen; i++)					 	// 检查长度，拷贝数据
+	{
+		vUStr[i] = UART0Buffer[vFlg+i];
+		UART0Buffer[i] = 0;
+	}
+
+	UART0Count = 0;
 	//for(i=0; i<24; i++)
 	//	UART0Buffer[i] = 0;
-		i=2;
+	i=2;
 	vULen  = vUStr[i++];
 	gUartDType = vUStr[i++];
 //	if((( gUartDType & 0x0f)>6))// || (( gUartDType & 0x0f)<1))		// 数据类型字段错误
@@ -112,16 +91,15 @@ uchar Uart0_WL_Rcv(void)
 	
 			gTXErrDly = 30; 
 	vXOR = 0;
-	vChk = 0;
 	for(i=2; i<vULen; i++)					 	// 检查长度，拷贝数据
 	{
 		vXOR ^= vUStr[i];
 		vChk += vUStr[i];
 	}
 	if(vXOR != vUStr[i])						// 校验错
-		{ gWLRcvChkFail++; UART0RxTail = UART0RxHead; break; }	// 本帧作废，丢弃缓冲（诊断计数）
+		return 0;
 	if((uchar)vChk != vUStr[i+1])						// 校验错
-		{ gWLRcvChkFail++; UART0RxTail = UART0RxHead; break; }
+		return 0;
 	
 	i=3;		  // vUStr[3] == Data0
 	//vPageNum = gUartDType & 0xf0;
@@ -283,7 +261,6 @@ uchar Uart0_WL_Rcv(void)
 			break;
 	}
 	gWLRcvOk++;
-	}
 	return gUartDType;
 }
 
