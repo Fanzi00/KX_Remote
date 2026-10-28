@@ -178,6 +178,8 @@ extern unsigned char gChaoZOv ;
 
 extern unsigned int  gAISendFlg;		// 下发AI，上电后全部发送，设置时一直发送
 extern unsigned int  gWLSingV ;extern unsigned int  dead_zone ;
+extern unsigned int  gWLRcvChkFail ;	// 帧校验失败计数
+extern unsigned int  gWLRcvHdrMiss ;	// 缓存中找不到有效帧头计数
 	   
 
 extern unsigned char gYKQ_WLStr[24];					// 遥控器的数据，发往 无线

@@ -14,9 +14,11 @@
 
 volatile uint32_t UART0Status, UART1Status;
 volatile uint8_t UART0TxEmpty = 1, UART1TxEmpty = 1;
-volatile uint8_t UART0Buffer[UARTBUFSIZE], UART1Buffer[UARTBUFSIZE];
-volatile uint32_t UART0Count = 0, UART1Count = 0;
+volatile uint8_t UART0RxBuf[UART0_RXBUF_SIZE], UART1Buffer[UARTBUFSIZE];
+volatile uint16_t UART0RxHead = 0, UART0RxTail = 0;
+volatile uint32_t UART1Count = 0;
 volatile uint32_t UART0RcvDly = 0, UART1RcvDly = 0;
+volatile uint32_t gUart0RxOver = 0;		// 环形缓冲溢出计数（溢出时丢弃新字节）
 
 uint32_t  gUart0RcvFlg = 0;
 uint32_t  gUart1RcvFlg = 0;
@@ -54,26 +56,16 @@ void UART0_IRQHandler (void)
 	}
 	if ( LSRValue & LSR_RDR )	/* Receive Data Ready */			
 	{
-	  /* If no error on RLS, normal ready, save into the data buffer. */
+	  /* If no error on RLS, normal ready, save into the ring buffer. */
 	  /* Note: read RBR will clear the interrupt */
-	  UART0Buffer[UART0Count] = UART0->RBR;
-	  UART0Count++;
-	  if ( UART0Count == UARTBUFSIZE )
-	  {
-		UART0Count = 0;		/* buffer overflow */
-	  }	
+	  UART0_RX_PUSH(UART0->RBR);
 	}
   }
   else if ( IIRValue == IIR_RDA )	/* Receive Data Available */
   {
 	/* Receive Data Available */
-	UART0Buffer[UART0Count] = UART0->RBR;
-	UART0Count++;
+	UART0_RX_PUSH(UART0->RBR);
 	UART0RcvDly = 3;
-	if ( UART0Count == UARTBUFSIZE-1 )
-	{
-	  UART0Count = 0;//UARTBUFSIZE-1;		/* buffer overflow */
-	}
   }
   else if ( IIRValue == IIR_CTI )	/* Character timeout indicator */
   {

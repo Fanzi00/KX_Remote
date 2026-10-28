@@ -26,6 +26,8 @@ uint32_t gArmOpFLg0 = 0;			// 摇杆动作的标记，1bit对应一个方向
 unsigned int  gAISendFlg = 0;	// 下发AI，上电后全部发送，设置时一直发送
 unsigned int  gWLSingV = 0;
 unsigned int  dead_zone = 0;
+unsigned int  gWLRcvChkFail = 0;	// 帧校验失败计数（噪声/错帧，RF 误码）
+unsigned int  gWLRcvHdrMiss = 0;	// 缓存中找不到有效帧头计数（噪声/掉线时堆积的垃圾）
 
 // 摇杆从左(J1) 到右(J8)对应的AD采样值存储位置
 #if _ARM_XY						// 万向摇杆

@@ -156,39 +156,37 @@ void wl_rd_rcv(void)
 
 	if(gWLRWFlg >= 0x5A)				// 读取 无线模块的当前参数，等待模块返回数据
 	{
-		vULen = UART0Count;
-		if(vULen >= 6)
+		vULen = (uint8_t)((UART0RxHead - UART0RxTail) & UART0_RXBUF_MASK);
+		if(vULen >= 7)
 		{
 			for(i=0; i<vULen; i++)
 			{
-				if(UART0Buffer[i] == 0xC0)
+				if(UART0_RX_GET(i) == 0xC0)
 				{
+					if((i + 7) > vULen)		// 0xC0 帧共 7 字节，不足则等下一批（环形缓冲不会丢，不越界）
+						break;
 					k = 0;
 					l = i;
 					vCStr[k++] = 'X';
 					vCStr[k++] = 'R';
-					vCStr[k++] = UART0Buffer[i++];
-					vCStr[k++] = UART0Buffer[i++];
-					vCStr[k++] = UART0Buffer[i++];
-					vCStr[k++] = UART0Buffer[i++];
-					vCStr[k++] = UART0Buffer[i++];
-					vCStr[k++] = UART0Buffer[i++];
+					vCStr[k++] = UART0_RX_GET(i++);
+					vCStr[k++] = UART0_RX_GET(i++);
+					vCStr[k++] = UART0_RX_GET(i++);
+					vCStr[k++] = UART0_RX_GET(i++);
+					vCStr[k++] = UART0_RX_GET(i++);
+					vCStr[k++] = UART0_RX_GET(i++);
 					CAN_Send(0, ID_ACK_M1, vCStr);
 					k=0;
 					i=l;
-					gWLInfo[k++] = UART0Buffer[i++];
-					gWLInfo[k++] = UART0Buffer[i++];
-					gWLInfo[k++] = UART0Buffer[i++];
-					gWLInfo[k++] = UART0Buffer[i++];
-					gWLInfo[k++] = UART0Buffer[i++];
-					gWLInfo[k++] = UART0Buffer[i++];
+					gWLInfo[k++] = UART0_RX_GET(i++);
+					gWLInfo[k++] = UART0_RX_GET(i++);
+					gWLInfo[k++] = UART0_RX_GET(i++);
+					gWLInfo[k++] = UART0_RX_GET(i++);
+					gWLInfo[k++] = UART0_RX_GET(i++);
+					gWLInfo[k++] = UART0_RX_GET(i++);
 					gWLInfo[k++] = 0;
 					gWLRWFlg = 0x5f;
-					UART0Count = 0;
-					for(i=0; i<vULen; i++)					 	// 检查长度，拷贝数据
-					{
-						UART0Buffer[i] = 0;
-					}
+					UART0RxTail = (UART0RxTail + vULen) & UART0_RXBUF_MASK;
 					break;
 				}
 			}

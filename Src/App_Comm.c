@@ -44,6 +44,7 @@ uchar Uart0_WL_Rcv(void)
 	uchar vPageNum = 0;
 	uchar vUStr[128] = {0};
 	uchar vCh = 0;
+	uchar vFrameLen = 0;		// 整帧长度（H1/H2 + LEN 指示），用于按帧拷贝、避免越界
 //	uint  vIntD = 0;
 //	uchar vType = 0;
 
@@ -53,36 +54,53 @@ uchar Uart0_WL_Rcv(void)
 		return 0;
 	}		
 
-	vULen = UART0Count;
+	//// 从环形缓冲中取一帧：关 UART0 收中断后原子读取，ISR 只改 UART0RxHead、解析只改 UART0RxTail，互不踩踏
+	NVIC_DisableIRQ(UART0_IRQn);
+	vULen = (uint8_t)((UART0RxHead - UART0RxTail) & UART0_RXBUF_MASK);
+	if(vULen == 0)
+	{
+		NVIC_EnableIRQ(UART0_IRQn);
+		return 0;
+	}
+	vFlg = 0xff;
 	for(i=0; i<vULen; i++)
 	{
-		if(UART0Buffer[i] == UART_H1)
+		if(UART0_RX_GET(i) == UART_H1)
 		{
-			if(UART0Buffer[i+1] == UART_H2)		 // 找到帧头
+			if((i+1 < vULen) && (UART0_RX_GET(i+1) == UART_H2))	 // 找到帧头
 			{
 				vFlg = i;
 				break;
 			}
-		}	 
-	}
-//	Can_Prog_Send5(0x20);
-	if((vFlg + UART_LEN) > vULen)				// 接收数据的长度不够
-	{
-	//	UART0Count = 0;
-	//	for(i=0; i<24; i++)
-	//		UART0Buffer[i] = 0;
-		return 0;
 		}
-
-	for(i=0; i<vULen; i++)					 	// 检查长度，拷贝数据
-	{
-		vUStr[i] = UART0Buffer[vFlg+i];
-		UART0Buffer[i] = 0;
 	}
-
-	UART0Count = 0;
-	//for(i=0; i<24; i++)
-	//	UART0Buffer[i] = 0;
+	if(vFlg == 0xff)					// 无帧头：缓冲里是噪声/垃圾，整段丢弃避免堆积
+	{
+		UART0RxTail = (UART0RxTail + vULen) & UART0_RXBUF_MASK;
+		gWLRcvHdrMiss++;
+		NVIC_EnableIRQ(UART0_IRQn);
+		return 0;
+	}
+	if((vULen - vFlg) < 3)			// 仅有帧头、尚未收到 LEN 字段，等下一批
+	{
+		NVIC_EnableIRQ(UART0_IRQn);
+		return 0;
+	}
+	//// 关键修复：先按帧内 LEN 字段计算整帧长度，仅拷贝“整帧”，严禁越界写入 vUStr[128]。
+	//// 原 13b2ab7 实现拷贝到缓冲末尾（vULen-vFlg 可能 >128），导致栈溢出，把上电/掉线时
+	//// 无线模块持续的噪声流当成合法帧解析，出现每次上电都一样的“脏数据”。
+	vFrameLen = UART0_RX_GET(vFlg + 2) + 2;		// 帧长 = LEN + H1/H2
+	if((vFlg + vFrameLen) > vULen)			// 帧未齐：保留在缓冲，等后续字节到齐
+	{
+		NVIC_EnableIRQ(UART0_IRQn);
+		return 0;
+	}
+	for(i=0; (i < vFrameLen) && (i < (int)(sizeof(vUStr) - 1)); i++)
+		vUStr[i] = UART0_RX_GET(vFlg + i);
+	//// 消费整帧后再开中断（ISR 在解析期间不会改写已消费字节）
+	UART0RxTail = (UART0RxTail + vFlg + vFrameLen) & UART0_RXBUF_MASK;
+	NVIC_EnableIRQ(UART0_IRQn);
+	//// 以下沿用原帧解析逻辑（vUStr 已为完整一帧，vUStr[0]=H1）
 	i=2;
 	vULen  = vUStr[i++];
 	gUartDType = vUStr[i++];
@@ -97,9 +115,9 @@ uchar Uart0_WL_Rcv(void)
 		vChk += vUStr[i];
 	}
 	if(vXOR != vUStr[i])						// 校验错
-		return 0;
+		{ gWLRcvChkFail++; return 0; }
 	if((uchar)vChk != vUStr[i+1])						// 校验错
-		return 0;
+		{ gWLRcvChkFail++; return 0; }
 	
 	i=3;		  // vUStr[3] == Data0
 	//vPageNum = gUartDType & 0xf0;
