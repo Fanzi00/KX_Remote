@@ -29,12 +29,4 @@ typedef struct KX119_Recv{
 
 extern KX119_Recv_t KX_119_recv_dis;
 
-void WL_Recv(unsigned char vGrp, const unsigned char* buf);
-uint8_t showWarn(uint32_t t);
-void clear_lcd(void);
-void MainLogic(void);
-void SelfChk_main(void);	// 上电自检状态机：10ms 节拍(main.c)周期调用，实现见 KXCAN_GLZYTC.c
-void Activar();
-void selfDisplay(void);
-
 #endif // EXAMPLE_H_

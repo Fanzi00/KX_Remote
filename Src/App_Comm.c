@@ -42,7 +42,7 @@ uchar Uart0_WL_Rcv(void)
 	unsigned short vChk = 0;
 	uchar vFlg = 0xff;
 	uchar vPageNum = 0;
-	uchar vUStr[128];
+	uchar vUStr[128] = {0};
 	uchar vCh = 0;
 //	uint  vIntD = 0;
 //	uchar vType = 0;
