@@ -36,10 +36,11 @@ unsigned char  gCanOutTst = 0;
 unsigned int   gCanDOTstV = 0;
 int fCurve_State = 0;
 float fOutput_Y = 0.0;
-float ArrayX[_CURVE_N][_CURVE_X];
-float ArrayY[_CURVE_N][_CURVE_X];
-unsigned char Y_Send[10] ;	
-unsigned char GL_Send[10] ;	    unsigned char VKC_Send[10] ;   
+float ArrayX[_CURVE_N][_CURVE_X] = {0};
+float ArrayY[_CURVE_N][_CURVE_X] = {0};
+unsigned char Y_Send[10] = {0};	
+unsigned char GL_Send[10] = {0};	    
+unsigned char VKC_Send[10] = {0};   
 
 //unsigned char gCycleSetCheck[8] = "CYCLExx";
 //unsigned int  GRcv44Dly = 0;

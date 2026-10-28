@@ -4,6 +4,9 @@
 
 
 Activar_t F = {0};
+
+static DiffCtx gGLZYTCDiff; // 差分刷新上下文（装药台车界面）
+static DiffCtx gGLZYTCDiff;   // 差分刷新上下文（调用方持有，每个屏一个）
 // 扭子开关图标配置表（App_lcd.c 的 Disp_Rock_Pic 遍历绘制）
 // 行格式: {是否显示, 屏幕X, 屏幕Y, gDIBitV移位数, 几档开关(2/3), 是否自锁(0/1), 显示映射(0/1)}
 // 两档自锁: 图标仅上/下; 两档自复位: 触发/中; 三档: 上/中/下(自锁自复位同)
@@ -144,6 +147,14 @@ static void SelfChk_Proc(uint32_t* err_mask)
 	else if(VKC_Send[1] <= 99)		*err_mask = 54;		// 左手顶钮按下（VKC_Send原始字节，对齐HNGL判法）
 	else if(_BitV(vDI, 30))			*err_mask = 55;		// 右手顶钮 0x18A[3].6
 }
+void ADC_Correction()
+{
+	if(ADCRst[9] > 0xA85)
+	{
+		ADCRst[9] = 0xA85;
+	}
+	ADC_value[3] = ADCRst[9] * 0x7F / 0xA85;
+}
 
 // 自检状态机，10ms 节拍：0=上电延时300ms → 1=自检循环 → 2=正常运行
 // 以屏上信号图标为判据（图标红 = 未激活gLaBaFlg==0 或 无线信号gWLSingV<=1，见 App_lcd.c）：
@@ -219,7 +230,22 @@ void clear_lcd(void)
 }
 
 // 装药台车界面: 左臂0x1C0/中臂0x1D0/右臂0x1E0 各显示左/右/上/前距, 单位mm
-void display()
+// 静态层：仅绘制固定单位（进页面时画一次）
+void display_static(void)
+{
+	static const uint8_t high = 30;        // 行高
+	static const uint8_t margL = 10;       // 左边距
+	static const uint8_t Title = 30;       // 第一行的高度
+
+	LCD_Set_Color(COLOR_WHITE_, -1); // 字体 设置为白色
+	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*0, (uchar*)"mm");
+	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*1, (uchar*)"mm");
+	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*2, (uchar*)"mm");
+	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*3, (uchar*)"mm");
+}
+
+// 动态层：臂名/标签/数值走差分刷新（只发变化字段），自检警告保留直刷
+void display_dynamic(void)
 {
 	static const uint8_t high = 30;        // 行高
 	static const uint8_t margL = 10;       // 左边距
@@ -236,52 +262,54 @@ void display()
 		flag = 2;
 	else // 中臂
 		flag = 1;
+
 	if(flag == 0)
 	{
 		LCD_Set_Color(COLOR_WHITE_, -1);
-		LCD_Disp_Txt(FONT_16, Vermid-32/2, margT, (uchar*)"左臂");// 第一行显示
-		LCD_Disp_Txt(FONT_16, margL, Title+high*0, (uchar*)"1#左距:");
-		LCD_Disp_Txt(FONT_16, margL, Title+high*1, (uchar*)"1#右距:");
-		LCD_Disp_Txt(FONT_16, margL, Title+high*2, (uchar*)"1#上距:");
-		LCD_Disp_Txt(FONT_16, margL, Title+high*3, (uchar*)"1#前距:");
+		Diff_Txt(&gGLZYTCDiff, 0, Vermid-32/2, margT, (uchar*)"左臂", FONT_16);// 第一行显示
+		Diff_Txt(&gGLZYTCDiff, 1, margL, Title+high*0, (uchar*)"1#左距:", FONT_16);
+		Diff_Txt(&gGLZYTCDiff, 2, margL, Title+high*1, (uchar*)"1#右距:", FONT_16);
+		Diff_Txt(&gGLZYTCDiff, 3, margL, Title+high*2, (uchar*)"1#上距:", FONT_16);
+		Diff_Txt(&gGLZYTCDiff, 4, margL, Title+high*3, (uchar*)"1#前距:", FONT_16);
 
 		LCD_Set_Color(COLOR_YELLW_, -1);
-		LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*0, KX_119_recv_dis.data[0].u16Data, 5);
-		LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*1, KX_119_recv_dis.data[1].u16Data, 5);
-		LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*2, KX_119_recv_dis.data[2].u16Data, 5);
-		LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*3, KX_119_recv_dis.data[3].u16Data, 5);
+		Diff_Int(&gGLZYTCDiff, 5, margL+LwordLenth, Title+high*0, KX_119_recv_dis.data[0].u16Data, 5, FONT_16, 0);
+		Diff_Int(&gGLZYTCDiff, 6, margL+LwordLenth, Title+high*1, KX_119_recv_dis.data[1].u16Data, 5, FONT_16, 0);
+		Diff_Int(&gGLZYTCDiff, 7, margL+LwordLenth, Title+high*2, KX_119_recv_dis.data[2].u16Data, 5, FONT_16, 0);
+		Diff_Int(&gGLZYTCDiff, 8, margL+LwordLenth, Title+high*3, KX_119_recv_dis.data[3].u16Data, 5, FONT_16, 0);
 	}
 	else if(flag == 1)
 	{
 		LCD_Set_Color(COLOR_WHITE_, -1);
-		LCD_Disp_Txt(FONT_16, Vermid-32/2, margT, (uchar*)"中臂");// 第一行显示
-		LCD_Disp_Txt(FONT_16, margL, Title+high*0, (uchar*)"2#左距:");
-		LCD_Disp_Txt(FONT_16, margL, Title+high*1, (uchar*)"2#右距:");
-		LCD_Disp_Txt(FONT_16, margL, Title+high*2, (uchar*)"2#上距:");
-		LCD_Disp_Txt(FONT_16, margL, Title+high*3, (uchar*)"2#前距:");
+		Diff_Txt(&gGLZYTCDiff, 0, Vermid-32/2, margT, (uchar*)"中臂", FONT_16);// 第一行显示
+		Diff_Txt(&gGLZYTCDiff, 1, margL, Title+high*0, (uchar*)"2#左距:", FONT_16);
+		Diff_Txt(&gGLZYTCDiff, 2, margL, Title+high*1, (uchar*)"2#右距:", FONT_16);
+		Diff_Txt(&gGLZYTCDiff, 3, margL, Title+high*2, (uchar*)"2#上距:", FONT_16);
+		Diff_Txt(&gGLZYTCDiff, 4, margL, Title+high*3, (uchar*)"2#前距:", FONT_16);
 
 		LCD_Set_Color(COLOR_YELLW_, -1);
-		LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*0, KX_119_recv_dis.data[4].u16Data, 5);
-		LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*1, KX_119_recv_dis.data[5].u16Data, 5);
-		LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*2, KX_119_recv_dis.data[6].u16Data, 5);
-		LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*3, KX_119_recv_dis.data[7].u16Data, 5);
+		Diff_Int(&gGLZYTCDiff, 5, margL+LwordLenth, Title+high*0, KX_119_recv_dis.data[4].u16Data, 5, FONT_16, 0);
+		Diff_Int(&gGLZYTCDiff, 6, margL+LwordLenth, Title+high*1, KX_119_recv_dis.data[5].u16Data, 5, FONT_16, 0);
+		Diff_Int(&gGLZYTCDiff, 7, margL+LwordLenth, Title+high*2, KX_119_recv_dis.data[6].u16Data, 5, FONT_16, 0);
+		Diff_Int(&gGLZYTCDiff, 8, margL+LwordLenth, Title+high*3, KX_119_recv_dis.data[7].u16Data, 5, FONT_16, 0);
 	}
 	else
 	{
 		LCD_Set_Color(COLOR_WHITE_, -1);
-		LCD_Disp_Txt(FONT_16, Vermid-32/2, margT, (uchar*)"右臂");// 第一行显示
-		LCD_Disp_Txt(FONT_16, margL, Title+high*0, (uchar*)"3#左距:");
-		LCD_Disp_Txt(FONT_16, margL, Title+high*1, (uchar*)"3#右距:");
-		LCD_Disp_Txt(FONT_16, margL, Title+high*2, (uchar*)"3#上距:");
-		LCD_Disp_Txt(FONT_16, margL, Title+high*3, (uchar*)"3#前距:");
+		Diff_Txt(&gGLZYTCDiff, 0, Vermid-32/2, margT, (uchar*)"右臂", FONT_16);// 第一行显示
+		Diff_Txt(&gGLZYTCDiff, 1, margL, Title+high*0, (uchar*)"3#左距:", FONT_16);
+		Diff_Txt(&gGLZYTCDiff, 2, margL, Title+high*1, (uchar*)"3#右距:", FONT_16);
+		Diff_Txt(&gGLZYTCDiff, 3, margL, Title+high*2, (uchar*)"3#上距:", FONT_16);
+		Diff_Txt(&gGLZYTCDiff, 4, margL, Title+high*3, (uchar*)"3#前距:", FONT_16);
 
 		LCD_Set_Color(COLOR_YELLW_, -1);
-		LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*0, KX_119_recv_dis.data[8].u16Data, 5);
-		LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*1, KX_119_recv_dis.data[9].u16Data, 5);
-		LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*2, KX_119_recv_dis.data[10].u16Data, 5);
-		LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*3, KX_119_recv_dis.data[11].u16Data, 5);
+		Diff_Int(&gGLZYTCDiff, 5, margL+LwordLenth, Title+high*0, KX_119_recv_dis.data[8].u16Data, 5, FONT_16, 0);
+		Diff_Int(&gGLZYTCDiff, 6, margL+LwordLenth, Title+high*1, KX_119_recv_dis.data[9].u16Data, 5, FONT_16, 0);
+		Diff_Int(&gGLZYTCDiff, 7, margL+LwordLenth, Title+high*2, KX_119_recv_dis.data[10].u16Data, 5, FONT_16, 0);
+		Diff_Int(&gGLZYTCDiff, 8, margL+LwordLenth, Title+high*3, KX_119_recv_dis.data[11].u16Data, 5, FONT_16, 0);
 	}
 
+	// 自检异常提示：保留直刷（可靠显示，不参与差分）
 	uint8_t strBuf[32];
 	uint32_t mask = gSelfChkMask;
 	if(showWarn(mask))
@@ -294,17 +322,21 @@ void display()
 	{
 		LCD_Disp_Txt(FONT_16, margL, Title+high*5, "                        ");
 	}
-	LCD_Set_Color(COLOR_WHITE_, -1); // 字体 设置为白色
-	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*0, (uchar*)"mm");
-	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*1, (uchar*)"mm");
-	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*2, (uchar*)"mm");
-	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*3, (uchar*)"mm");
+
+	Diff_EndFrame(&gGLZYTCDiff);
 }
 
-// 主要逻辑
+// 主要逻辑：每 N 帧刷新动态数据
 void MainLogic(void)
 {
-	display();
+    display_dynamic();
+}
+
+// 进页面：绘制静态文字并请求整页全量（前 2 帧强制全发，之后仅发变化字段）
+void MainLogic_Enter(void)
+{
+    display_static();
+    Diff_PageEnter(&gGLZYTCDiff);
 }
 
 #endif // (USER_TYPE == KXCAN_GLZYTC_L2X)

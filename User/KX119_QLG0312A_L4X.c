@@ -119,54 +119,51 @@ static const uint8_t Vermid = 320 / 2;
 static const uint8_t Title = 30;
 static const uint8_t LwordLenth = 8 * 3 + 16 * 2;
 
-void display()
+static DiffCtx gQLGDiff;   // 差分刷新上下文（调用方持有，每个屏一个）
+
+// 静态文字：进页面时绘制（固定标签 + 单位 + 自检区清屏），由 MainLogic_Enter 调用
+void display_static(void)
 {
-	uint8_t word_lenth = 32;
-	// 臂选择（协议 0x318.0.2=左臂, 0x318.0.3=右臂, 中臂=!左&&右）
-    // TODO: 本地 gDIBitV 的臂选择位按实机面板接线确认（此处先用 bit2/bit3 占位）
-    static uint8_t flag = 0;
-	static uint8_t flag_old = 0;
-	flag = KX_119_recv_dis.data[0].u8Data[0];
-	LCD_Set_Color(COLOR_WHITE_, -1);
-    if(flag == 0)
-    {
-        LCD_Disp_Txt(FONT_32, Vermid-word_lenth*5/2, 240/2-word_lenth*2, (uchar*)"未连接臂架");
-    }
-    else if(flag == 1)
-    {
-        LCD_Disp_Txt(FONT_32, Vermid-word_lenth*4/2, 240/2-word_lenth*2, (uchar*)"连接左臂");
-    }
-    else if(flag == 2)
-    {
-        LCD_Disp_Txt(FONT_32, Vermid-word_lenth*4/2, 240/2-word_lenth*2, (uchar*)"连接中臂");
-    }
-	else if (flag == 3)
-	{
-        LCD_Disp_Txt(FONT_32, Vermid-word_lenth*4/2, 240/2-word_lenth*2, (uchar*)"连接右臂");
-	}
-	if(flag != flag_old)
-		LCD_Disp_Txt(FONT_32, Vermid-word_lenth*5/2, 240/2-word_lenth*2, (uchar*)"                ");
-	flag_old = flag;
-	LCD_Disp_Txt(FONT_32, Vermid-(word_lenth*5+word_lenth/2*7)/2, 240/2, (uchar*)"吊篮倾角:");
-	LCD_Set_Color(COLOR_YELLW_, -1);
-	int16_t temp = KX_119_recv_dis.data[0].u8Data[1] | KX_119_recv_dis.data[1].u8Data[0] << 8;
-	LCD_Disp_Intx(FONT_32, Vermid-(word_lenth*5+word_lenth/2*7)/2 + (word_lenth*4+word_lenth/2), 240/2, temp, 5);
-	
-	LCD_Set_Color(COLOR_WHITE_, -1);
-	LCD_Disp_Txt(FONT_32, Vermid+(word_lenth*4+word_lenth/2*6)/2, 240/2, (uchar*)"度");
+    uint8_t word_lenth = 32;
+    LCD_Set_Color(COLOR_WHITE_, -1);
+    LCD_Disp_Txt(FONT_32, Vermid-(word_lenth*5+word_lenth/2*7)/2, 240/2, (uchar*)"吊篮倾角:");
+    LCD_Disp_Txt(FONT_32, Vermid+(word_lenth*4+word_lenth/2*6)/2, 240/2, (uchar*)"度");
+    // 自检异常区固定清屏（本机型无自检）
+    // LCD_Disp_Txt(FONT_16, margL, Title+high*5, "                        ");
 }
 
-// 本机型无自检，自检异常区固定清屏即可
-void selfDisplay(void)
+// 动态数据：实时走差分刷新（只发变化字段），由 MainLogic 每 N 帧调用
+void display_dynamic(void)
 {
-    LCD_Disp_Txt(FONT_16, margL, Title+high*5, "                        ");
+    uint8_t word_lenth = 32;
+    uint8_t flag = KX_119_recv_dis.data[0].u8Data[0];
+    const char* m;
+    if(flag == 0)      m = "未连接臂架";
+    else if(flag == 1) m = "连接左臂　";   // 全角空格补齐到 5 字宽，避免切回短串时屏幕残留
+    else if(flag == 2) m = "连接中臂　";
+    else               m = "连接右臂　";
+
+    LCD_Set_Color(COLOR_WHITE_, -1);
+    Diff_Txt(&gQLGDiff, 0, Vermid-word_lenth*5/2, 240/2-word_lenth*2, m, FONT_32);
+
+    LCD_Set_Color(COLOR_YELLW_, -1);
+    int16_t temp = KX_119_recv_dis.data[0].u8Data[1] | KX_119_recv_dis.data[1].u8Data[0] << 8;
+    Diff_Int(&gQLGDiff, 1, Vermid-(word_lenth*5+word_lenth/2*7)/2 + (word_lenth*4+word_lenth/2), 240/2, temp, 5, FONT_32, 0);
+
+    Diff_EndFrame(&gQLGDiff);
 }
 
-// 主要逻辑
+// 主要逻辑：每 N 帧刷新动态数据
 void MainLogic(void)
 {
-    display();
-    selfDisplay();
+    display_dynamic();
+}
+
+// 进页面：绘制静态文字并请求整页全量（前 2 帧强制全发，之后仅发变化字段）
+void MainLogic_Enter(void)
+{
+    display_static();
+    Diff_PageEnter(&gQLGDiff);
 }
 
 #endif // (USER_TYPE == KX119_QLG0312A_L4X)

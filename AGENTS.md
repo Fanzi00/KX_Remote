@@ -211,7 +211,7 @@
 - Bug: after RX drops and reconnects, TX auto-connects because gLaBaFlg was not cleared.
 - Fix: Src/main.c gT0SFlg block: whenever RX transitions offline->online (gWLSingV>0 while stWLHad was 0; covers both reconnect-after-drop AND RX powered-on later after TX already activated) clear gLaBaFlg=0; TX will NOT auto-connect, user must press activate key or force-activate. Online-only activation (RX already up when key pressed) is not disturbed.
 - Force-activate: added to all User/*.c Activar(): F5~F8 long-press 6s (forceDly counts to 6000, DI_Scan 1ms tick) sets gLaBaFlg=1 bypassing self-check. L2X3J has no F5~F8, uses F1~F4.
-- 关闭自动重连，掉线后必须手动激活（2026-10-24 修订，`Src/main.c` gT0S_Prog 分支）：`gWLSingV==0`（本秒未收到任何有效接收机回帧）时累计 `stWLLostDly`，**连续丢满 `_WL_LOST_DLY`(=2s) 才清 `gLaBaFlg = 0`**（在 `stWLLostDly >= _WL_LOST_DLY` 分支内显式清除；`wl_reset()` 本身只复位无线模块 IO、不清激活态）。即：瞬时(<2s)丢帧不清激活态、可自动重连；持续≥2s 掉线才清激活态，恢复后须手动重新激活（按 F3~F8 或强制激活 6s）。撤销 534cdca「对齐标准机、掉线后保持激活态自动重连」的做法。
+- 关闭自动重连，掉线后必须手动激活（2026-10-24 修订，`Src/main.c` gT0S_Prog 分支）：`gWLSingV==0`（本秒未收到任何有效接收机回帧）时累计 `stWLLostDly`，**连续丢满 `_WL_LOST_DLY`(=1s) 才清 `gLaBaFlg = 0`**（在 `stWLLostDly >= _WL_LOST_DLY` 分支内显式清除；`wl_reset()` 本身只复位无线模块 IO、不清激活态）。即：瞬时(<1s)丢帧不清激活态、可自动重连；持续≥1s 掉线才清激活态，恢复后须手动重新激活（按 F3~F8 或强制激活 6s）。撤销 534cdca「对齐标准机、掉线后保持激活态自动重连」的做法。
 
 ## 8. 主页面(Disp_mainSPJ)显示优化：静态文字进页面只画一次，数值实时刷新（2026-10-24）
 
@@ -235,6 +235,12 @@
 - 修正（2026-10-24）：单次 `display()` 在 `LCD_Disp_PIC(31)` 大图光栅之后调用会被 LCD 模块丢弃一部分（实测只画到“孔数:”之后就断了），所以进页面**连续 3 帧**调用 `display_static()`（由 `Disp_mainSPJ` 内 `static stEnterCnt` 控制：进页面置 3，每帧 >0 则画静态并自减），3 帧后再只 `display_dynamic()`。静态文字只在进页面画一次（3 帧内画全），数值每帧实时刷新。
 
 - GLMZ213_L3X already had force-activate; GLZYTC/GLGJT312E/Example/QLG0312A/L2X3J added now.
+
+**补全（2026-10-27）：GLZYTC / Example 的 display() 差分拆分**
+- `KXCAN_GLZYTC.c`：`display()` 拆为 `display_static()`（仅画 4 个 `mm` 单位白字）+ `display_dynamic()`（臂名 id0 / 4 标签 id1-4 / 4 数值 id5-8 走 `Diff_Txt`/`Diff_Int`；自检警告保留直刷 `LCD_Disp_Txt` 不参与差分；末 `Diff_EndFrame(&gGLZYTCDiff)`）。`MainLogic()`→`display_dynamic()`；`MainLogic_Enter()`→`display_static()`+`Diff_PageEnter(&gGLZYTCDiff)`。臂名/标签随左/中/右臂切换等长替换，无残影。
+- `Example.c`（模板，数值字段全注释）：仅演示臂名切换，`display_static()` 留空，`display_dynamic()` 用 `Diff_Txt(&gExampleDiff,0,...,FONT_32)` 画臂名，`MainLogic_Enter()` 补 `Diff_PageEnter(&gExampleDiff)`。
+- **坑**：每文件必须声明自身的 `static DiffCtx gXXXDiff;`（如 `gGLZYTCDiff`/`gExampleDiff`），否则 `Diff_PageEnter/Diff_EndFrame` 引用未定义符号，lint 报 `undefined`。GLZYTC 此声明曾遗漏，已补。
+- 六个 User 机型文件（QLG0312A_L4X / GLGJT312E / GLMZ_L2X3J / GLZYTC / GLMZ213_L3X / Example）现全部完成差分拆分，lint 均 0 错误。
 
 ## 8. 自学习通道选择接口 `_ARM_STUDY_MASK`（2026-10-21, 所有遥控器通用）
 **需求**：F2 采中位原要求 8 路万向轴全部在 100~4090；没接手柄的通道读到 ≈0/≈4095 会触发"手柄采样异常"并在采集前 `return`，卡住整个自学习。需让每个遥控器可配置哪些通道参与自学习。模拟量今后都接 VKC_Send 的 8 个通道。

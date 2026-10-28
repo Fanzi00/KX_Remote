@@ -243,8 +243,9 @@ static const uint8_t margT = 5;		   // 上边距
 static const uint8_t Vermid = 320 / 2; // 竖中间线
 static const uint8_t Title = 30; // 第一行的高度
 static const uint8_t LwordLenth = 8 * 3 + 16 * 2; // 左侧文字长度
+static DiffCtx gGLGDiff;   // 差分刷新上下文（调用方持有，每个屏一个）
 // 装药台车界面: 左臂0x1C0/中臂0x1D0/右臂0x1E0 各显示左/右/上/前距, 单位mm
-void display()
+void display_dynamic()
 {
 	// 臂选择: 按GJT312E协议 左臂=0x18A[0].6 右臂=0x18A[0].7 皆0=中臂
 	uint8_t flag = 0;
@@ -257,7 +258,7 @@ void display()
 	if(flag == 0)
 	{
 		LCD_Set_Color(COLOR_WHITE_, -1);
-		LCD_Disp_Txt(FONT_32, Vermid-32*2/2, 104, (uchar*)"左臂");
+		Diff_Txt(&gGLGDiff, 0, Vermid-32*2/2, 104, (uchar*)"左臂", FONT_32);
 		// LCD_Disp_Txt(FONT_16, margL, Title+high*0, (uchar*)"1#左距:");
 		// LCD_Disp_Txt(FONT_16, margL, Title+high*1, (uchar*)"1#右距:");
 		// LCD_Disp_Txt(FONT_16, margL, Title+high*2, (uchar*)"1#上距:");
@@ -272,7 +273,7 @@ void display()
 	else if(flag == 1)
 	{
 		LCD_Set_Color(COLOR_WHITE_, -1);
-		LCD_Disp_Txt(FONT_32, Vermid-32*2/2, 104, (uchar*)"中臂");
+		Diff_Txt(&gGLGDiff, 0, Vermid-32*2/2, 104, (uchar*)"中臂", FONT_32);
 		// LCD_Disp_Txt(FONT_16, margL, Title+high*0, (uchar*)"2#左距:");
 		// LCD_Disp_Txt(FONT_16, margL, Title+high*1, (uchar*)"2#右距:");
 		// LCD_Disp_Txt(FONT_16, margL, Title+high*2, (uchar*)"2#上距:");
@@ -287,7 +288,7 @@ void display()
 	else
 	{
 		LCD_Set_Color(COLOR_WHITE_, -1);
-		LCD_Disp_Txt(FONT_32, Vermid-32*2/2, 104, (uchar*)"右臂");
+		Diff_Txt(&gGLGDiff, 0, Vermid-32*2/2, 104, (uchar*)"右臂", FONT_32);
 		// LCD_Disp_Txt(FONT_16, margL, Title+high*0, (uchar*)"3#左距:");
 		// LCD_Disp_Txt(FONT_16, margL, Title+high*1, (uchar*)"3#右距:");
 		// LCD_Disp_Txt(FONT_16, margL, Title+high*2, (uchar*)"3#上距:");
@@ -306,6 +307,7 @@ void display()
 	// LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*1, (uchar*)"mm");
 	// LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*2, (uchar*)"mm");
 	// LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*3, (uchar*)"mm");
+	Diff_EndFrame(&gGLGDiff);
 }
 
 void selfDisplay(void)
@@ -323,11 +325,24 @@ void selfDisplay(void)
 		LCD_Disp_Txt(FONT_16, margL, Title+high*5, "                        ");
 	}
 }
-// 主要逻辑
+// 静态文字：本机型屏显当前仅臂选择文本为有效内容（数值距离字段暂未启用），无独立静态标签
+void display_static(void)
+{
+    // 无独立静态标签
+}
+
+// 主要逻辑：每 N 帧刷新动态数据
 void MainLogic(void)
 {
-	display();
-	selfDisplay();
+    display_dynamic();
+    selfDisplay();
+}
+
+// 进页面：绘制静态文字并请求整页全量（前 2 帧强制全发，之后仅发变化字段）
+void MainLogic_Enter(void)
+{
+    display_static();
+    Diff_PageEnter(&gGLGDiff);
 }
 
 #endif // (USER_TYPE == KXCAN_GLGJT312E_L3X)

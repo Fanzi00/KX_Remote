@@ -284,8 +284,18 @@ static const uint8_t margT = 5;		   // 上边距
 static const uint8_t Vermid = 320 / 2; // 竖中间线
 static const uint8_t Title = 30; // 第一行的高度
 static const uint8_t LwordLenth = 8 * 3 + 16 * 2; // 左侧文字长度
-// 装药台车界面: 左臂0x1C0/中臂0x1D0/右臂0x1E0 各显示左/右/上/前距, 单位mm
-void display()
+
+static DiffCtx gExampleDiff; // 差分刷新上下文（示例/通用界面）
+
+// 示例界面：仅演示臂名切换（数值字段为占位注释），单位 mm 等静态文字按需在此绘制
+// 静态层：无固定标签/单位（原字段均注释），进页面时调用一次（可留空）
+void display_static(void)
+{
+	// 示例模板：标签与单位均注释掉，无静态文字可画
+}
+
+// 动态层：臂名走差分刷新（只发变化字段）
+void display_dynamic(void)
 {
 	// 臂选择: 按GJT312E协议 左臂=0x18A[0].6 右臂=0x18A[0].7 皆0=中臂
 	uint8_t flag = 0;
@@ -295,58 +305,16 @@ void display()
 		flag = 2;
 	else // 中臂
 		flag = 1;
+
+	LCD_Set_Color(COLOR_WHITE_, -1);
 	if(flag == 0)
-	{
-		LCD_Set_Color(COLOR_WHITE_, -1);
-		LCD_Disp_Txt(FONT_32, Vermid-32*2/2, 104, (uchar*)"左臂");
-		// LCD_Disp_Txt(FONT_16, margL, Title+high*0, (uchar*)"1#左距:");
-		// LCD_Disp_Txt(FONT_16, margL, Title+high*1, (uchar*)"1#右距:");
-		// LCD_Disp_Txt(FONT_16, margL, Title+high*2, (uchar*)"1#上距:");
-		// LCD_Disp_Txt(FONT_16, margL, Title+high*3, (uchar*)"1#前距:");
-
-		// LCD_Set_Color(COLOR_YELLW_, -1);
-		// LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*0, KX_119_recv_dis.data[0].u16Data, 5);
-		// LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*1, KX_119_recv_dis.data[1].u16Data, 5);
-		// LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*2, KX_119_recv_dis.data[2].u16Data, 5);
-		// LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*3, KX_119_recv_dis.data[3].u16Data, 5);
-	}
+		Diff_Txt(&gExampleDiff, 0, Vermid-32*2/2, 104, (uchar*)"左臂", FONT_32);
 	else if(flag == 1)
-	{
-		LCD_Set_Color(COLOR_WHITE_, -1);
-		LCD_Disp_Txt(FONT_32, Vermid-32*2/2, 104, (uchar*)"中臂");
-		// LCD_Disp_Txt(FONT_16, margL, Title+high*0, (uchar*)"2#左距:");
-		// LCD_Disp_Txt(FONT_16, margL, Title+high*1, (uchar*)"2#右距:");
-		// LCD_Disp_Txt(FONT_16, margL, Title+high*2, (uchar*)"2#上距:");
-		// LCD_Disp_Txt(FONT_16, margL, Title+high*3, (uchar*)"2#前距:");
-
-		// LCD_Set_Color(COLOR_YELLW_, -1);
-		// LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*0, KX_119_recv_dis.data[4].u16Data, 5);
-		// LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*1, KX_119_recv_dis.data[5].u16Data, 5);
-		// LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*2, KX_119_recv_dis.data[6].u16Data, 5);
-		// LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*3, KX_119_recv_dis.data[7].u16Data, 5);
-	}
+		Diff_Txt(&gExampleDiff, 0, Vermid-32*2/2, 104, (uchar*)"中臂", FONT_32);
 	else
-	{
-		LCD_Set_Color(COLOR_WHITE_, -1);
-		LCD_Disp_Txt(FONT_32, Vermid-32*2/2, 104, (uchar*)"右臂");
-		// LCD_Disp_Txt(FONT_16, margL, Title+high*0, (uchar*)"3#左距:");
-		// LCD_Disp_Txt(FONT_16, margL, Title+high*1, (uchar*)"3#右距:");
-		// LCD_Disp_Txt(FONT_16, margL, Title+high*2, (uchar*)"3#上距:");
-		// LCD_Disp_Txt(FONT_16, margL, Title+high*3, (uchar*)"3#前距:");
+		Diff_Txt(&gExampleDiff, 0, Vermid-32*2/2, 104, (uchar*)"右臂", FONT_32);
 
-		// LCD_Set_Color(COLOR_YELLW_, -1);
-		// LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*0, KX_119_recv_dis.data[8].u16Data, 5);
-		// LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*1, KX_119_recv_dis.data[9].u16Data, 5);
-		// LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*2, KX_119_recv_dis.data[10].u16Data, 5);
-		// LCD_Disp_Intx(FONT_16, margL+LwordLenth, Title+high*3, KX_119_recv_dis.data[11].u16Data, 5);
-	}
-
-	
-	// LCD_Set_Color(COLOR_WHITE_, -1); // 字体 设置为白色
-	// LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*0, (uchar*)"mm");
-	// LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*1, (uchar*)"mm");
-	// LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*2, (uchar*)"mm");
-	// LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*3, (uchar*)"mm");
+	Diff_EndFrame(&gExampleDiff);
 }
 
 void selfDisplay(void)
@@ -364,11 +332,18 @@ void selfDisplay(void)
 		LCD_Disp_Txt(FONT_16, margL, Title+high*5, "                        ");
 	}
 }
-// 主要逻辑
+// 主要逻辑：每 N 帧刷新动态数据
 void MainLogic(void)
 {
-	display();
+	display_dynamic();
 	selfDisplay();
+}
+
+// 进页面：绘制静态文字并请求整页全量（前 2 帧强制全发，之后仅发变化字段）
+void MainLogic_Enter(void)
+{
+	display_static();
+	Diff_PageEnter(&gExampleDiff);
 }
 
 #endif // (USER_TYPE == Example)

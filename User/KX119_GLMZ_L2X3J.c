@@ -17,6 +17,8 @@
 Activar_t F = {0};
 unsigned char gLinR1Send = 0;  // 直线摇杆1 映射值(0~255), ADC_Correction 写入, 走无线帧 ad1 槽(索引8)
 unsigned char gLinR3Send = 0;  // 直线摇杆3 映射值(0~255), ADC_Correction 写入, 走无线帧 ad2 槽(索引9)
+static DiffCtx gL2X3JDiff;   // 差分刷新上下文（调用方持有，每个屏一个）
+
 // 扭子开关图标配置表（App_lcd.c 的 Disp_SwiIconRow 遍历绘制）
 // 行格式: {是否显示, 屏幕X, 屏幕Y, gDIBitV移位数, 几档开关(2/3), 是否自锁(0/1), 显示映射(0/1)}
 // 两档自锁: 图标仅上/下; 两档自复位: 触发/中; 三档: 上/中/下(自锁自复位同)
@@ -285,39 +287,42 @@ static const uint8_t margT = 5;
 static const uint8_t Title = 30;
 
 // 显示车状态反馈 0x220：工作模式 + 回转/冲击/推进压力 + 水压
-void display()
+
+// 静态文字：进页面时绘制（固定标签 + 单位），由 MainLogic_Enter 调用
+void display_static(void)
+{
+    LCD_Set_Color(COLOR_WHITE_, -1);
+    LCD_Disp_Txt(FONT_16, S_WIDTH/2 - (16*4+8)/2, margT+high*0, (uchar*)"模式:");
+    LCD_Disp_Txt(FONT_16, margL, Title+high*0, (uchar*)"回转压力:");
+    LCD_Disp_Txt(FONT_16, margL, Title+high*1, (uchar*)"冲击压力:");
+    LCD_Disp_Txt(FONT_16, margL, Title+high*2, (uchar*)"推进压力:");
+    LCD_Disp_Txt(FONT_16, margL, Title+high*3, (uchar*)"水压:");
+    LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*0, (uchar*)"bar");
+    LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*1, (uchar*)"bar");
+    LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*2, (uchar*)"bar");
+    LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*3, (uchar*)"bar");
+}
+
+// 动态数据：实时走差分刷新（只发变化字段），由 MainLogic 每 N 帧调用
+void display_dynamic(void)
 {
     uint8_t mode = KX_119_recv_dis.data[0].u8Data[0];
+    const char* m;
+    if(_BitV(mode, 0))      m = "钻臂";
+    else if(_BitV(mode, 1)) m = "锚杆";
+    else if(_BitV(mode, 2)) m = "吊篮";
+    else                    m = "  --";   // 4 半角字符宽 = 2 中文字宽，避免切回时残留
+
     LCD_Set_Color(COLOR_WHITE_, -1);
+    Diff_Txt(&gL2X3JDiff, 0, S_WIDTH/2 - (16*4+8)/2 + 16*2+8, margT+high*0, m, FONT_16);
 
-    // 工作模式
-    LCD_Disp_Txt(FONT_16, S_WIDTH/2 - (16*4+8)/2, margT+high*0, (uchar*)"模式:");
-    if(_BitV(mode, 0))
-        LCD_Disp_Txt(FONT_16, S_WIDTH/2 - (16*4+8)/2 + 16*2+8, margT+high*0, (uchar*)"钻臂");
-    else if(_BitV(mode, 1))
-        LCD_Disp_Txt(FONT_16, S_WIDTH/2 - (16*4+8)/2 + 16*2+8, margT+high*0, (uchar*)"锚杆");
-    else if(_BitV(mode, 2))
-        LCD_Disp_Txt(FONT_16, S_WIDTH/2 - (16*4+8)/2 + 16*2+8, margT+high*0, (uchar*)"吊篮");
-    else
-        LCD_Disp_Txt(FONT_16, S_WIDTH/2 - (16*4+8)/2 + 16*2+8, margT+high*0, (uchar*)"  --");
+    LCD_Set_Color(COLOR_YELLW_, -1);
+    Diff_Int(&gL2X3JDiff, 1, margL+16*4+8, Title+high*0, KX_119_recv_dis.data[1].u16Data, 5, FONT_16, 0);
+    Diff_Int(&gL2X3JDiff, 2, margL+16*4+8, Title+high*1, KX_119_recv_dis.data[2].u16Data, 5, FONT_16, 0);
+    Diff_Int(&gL2X3JDiff, 3, margL+16*4+8, Title+high*2, KX_119_recv_dis.data[3].u16Data, 5, FONT_16, 0);
+    Diff_Int(&gL2X3JDiff, 4, margL+16*4+8, Title+high*3, KX_119_recv_dis.data[4].u8Data[0], 3, FONT_16, 0);
 
-    // 回转压力
-    LCD_Disp_Txt(FONT_16, margL, Title+high*0, (uchar*)"回转压力:");
-	LCD_Disp_Txt(FONT_16, margL, Title+high*1, (uchar*)"冲击压力:");
-	LCD_Disp_Txt(FONT_16, margL, Title+high*2, (uchar*)"推进压力:");
-	LCD_Disp_Txt(FONT_16, margL, Title+high*3, (uchar*)"水压:");
-
-	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*0, (uchar*)"bar");
-	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*1, (uchar*)"bar");
-	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*2, (uchar*)"bar");
-	LCD_Disp_Txt(FONT_16, margL+16*4+8*6, Title+high*3, (uchar*)"bar");
-
-	// 数值填充
-	LCD_Set_Color(COLOR_YELLW_, -1);
-    LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*0, KX_119_recv_dis.data[1].u16Data, 5);
-    LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*1, KX_119_recv_dis.data[2].u16Data, 5);
-    LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*2, KX_119_recv_dis.data[3].u16Data, 5);
-    LCD_Disp_Intx(FONT_16, margL+16*4+8, Title+high*3, KX_119_recv_dis.data[4].u8Data[0], 3);
+    Diff_EndFrame(&gL2X3JDiff);
 }
 
 // 自检异常提示：gSelfChkMask!=0 时在状态页显示红字（与 GLZYTC/213 同款）
@@ -337,11 +342,18 @@ void selfDisplay(void)
     }
 }
 
-// 主要逻辑
+// 主要逻辑：每 N 帧刷新动态数据
 void MainLogic(void)
 {
-    display();
+    display_dynamic();
     selfDisplay();
+}
+
+// 进页面：绘制静态文字并请求整页全量（前 2 帧强制全发，之后仅发变化字段）
+void MainLogic_Enter(void)
+{
+    display_static();
+    Diff_PageEnter(&gL2X3JDiff);
 }
 
 #endif // (USER_TYPE == KX119_GLMZ_L2X3J)

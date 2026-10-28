@@ -598,7 +598,7 @@ static void Disp_KnobIcon(void)
 	}
 }
 uint8_t stKnob[4] = {0};
-// 数值，周期刷新调用（显示 ADCRst 原始采样值）
+// 数值，周期刷新调用（显示 ADCRst 原始采样值） 显示旋钮值
 static void Disp_KnobValTab(void)
 {
 	unsigned char i;
