@@ -382,6 +382,16 @@ void Key_MainZZT(void)
 {
 	static unsigned int stCnt = 0;
 
+	// 组合键容错：F1+F3(进状态页)/F1+F4(进密码页) 两键消抖时刻不同步时，
+	// gKeyValue 可能只含单个键而被单独处理、导致组合键丢失。用已消抖的实时按键
+	// 状态 gDIBitV0（按下且消抖后才置 1：bit16=F1、bit18=F3、bit19=F4）补偿。
+	if((gDIBitV0 & (1<<16)) && (gDIBitV0 & (1<<18)) &&
+	   (gKeyValue == _F1 || gKeyValue == _F3 || gKeyValue == _F1F3))
+		gKeyValue = _F1F3;
+	if((gDIBitV0 & (1<<16)) && (gDIBitV0 & (1<<19)) &&
+	   (gKeyValue == _F1 || gKeyValue == _F4 || gKeyValue == _F1F4))
+		gKeyValue = _F1F4;
+
 	switch(gKeyValue)
 	{
 		case _F1:		

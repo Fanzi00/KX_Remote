@@ -56,6 +56,15 @@ void LCD_CLR_SCR(void)
 	UARTSend(1, gLCDSStr, gLCDSLen);
 }
 
+////  全屏黑色清屏：切页时用来消除 TFT 面板残影；背景临时改黑避免蓝色闪烁，清完恢复原背景色（否则文字描底色会变黑框）
+void LCD_CLR_SCR_BLK(void)
+{
+	long vBkBC = gLCDSets.mBC;
+	LCD_Set_Color(gLCDSets.mFC, 0);		// 背景临时设为黑色
+	LCD_CLR_SCR();						// 黑色清屏（消除残影）
+	LCD_Set_Color(gLCDSets.mFC, vBkBC);	// 恢复原背景色
+}
+
 ////  背光开关、调节
 void LCD_SET_BL(uchar vBL)
 {
@@ -100,6 +109,17 @@ void LCD_Disp_PIC(ushort vPicID)
 			LCD_SET_BL(gLCDBKLight);
 	}
 
+}
+
+//// 唤醒后若需要则开背光（原 LCD_Disp_PIC 内的逻辑；主界面不再用图片，故抽出供直接调用）
+void LCD_BK_On_IfWake(void)
+{
+	if(gLCDBKOnFlg >= 2)
+	{
+		delay_ms(20);
+		gLCDBKOnFlg = 0;
+		LCD_SET_BL(gLCDBKLight);
+	}
 }
 
 //// 设置当前调色板，颜色值一直保持到下次修改，RGB--5：6：5，改单个颜色时，另一个参数需为负数

@@ -213,7 +213,10 @@ void Disp_mainSPJ(void)
 	if(gLcdFresh >= 3)
 	{
 		gLcdFresh--;
-		LCD_Disp_PIC(31);
+		// 主界面不再用 31 号图片：直接用代码铺黑底+画两根白线，避免图片加载造成的闪烁
+		LCD_Set_Color(0, 0);							// 前景+背景都设为黑色（31 号图背景即黑色，黑色值=0x0000，工程无 COLOR_BLACK 常量）
+		LCD_Disp_Rect(LCD_C_D_FRect, 0, 0, LCD_WIDTH, LCD_HIGH);
+		LCD_BK_On_IfWake();							// 兼容唤醒开背光（原 LCD_Disp_PIC 内逻辑）
 		return;
 	}
 	stLoop++;
@@ -234,7 +237,7 @@ void Disp_mainSPJ(void)
 		gLcdFresh = 1;
 		LCD_Set_Cursor(0,1,1,2,2);
 		//gLCDPage.page = gLCDPage.cmdsel;
-		LCD_Disp_PIC(31);
+		LCD_BK_On_IfWake();							// 兼容唤醒开背光（主界面已不用图片）
 		stWLFlg = 55;
 		stBATFlg = 55;
 	}											//  moment_percentage
@@ -643,6 +646,7 @@ void Disp_ZZT_CtrlStatus(void)
 	if(gLcdFresh > 2)
 	{
 		gLcdFresh--;
+		LCD_CLR_SCR_BLK();		// 黑色清屏：消除切页残影且不出现蓝色闪烁
 		LCD_Disp_PIC(7);
 		return;
 	}
@@ -765,6 +769,7 @@ void Disp_GJ(void)
 	if(gLcdFresh >= 3)
 	{
 		gLcdFresh--;
+		LCD_CLR_SCR_BLK();		// 黑色清屏：消除切页残影且不出现蓝色闪烁
 		LCD_Disp_PIC(31);
 		return;
 	}
@@ -911,6 +916,7 @@ void Disp_Input_Password(void)
 	if(gLcdFresh > 2)
 	{
 		gLcdFresh--;
+		LCD_CLR_SCR_BLK();		// 黑色清屏：消除切页残影且不出现蓝色闪烁
 		LCD_Disp_PIC(6);
 		return;
 	}
@@ -965,6 +971,7 @@ void Disp_Cmd_Sel(void)
 	if(gLcdFresh == 3)
 	{
 		gLcdFresh--;
+		LCD_CLR_SCR_BLK();		// 黑色清屏：消除切页残影且不出现蓝色闪烁
 		LCD_Disp_PIC(9);
 		return;
 	}
@@ -1002,6 +1009,7 @@ void Disp_Cmd1_AITime(void)
 	if(gLcdFresh > 2)
 	{
 		gLcdFresh--;
+		LCD_CLR_SCR_BLK();		// 黑色清屏：消除切页残影且不出现蓝色闪烁
 		LCD_Disp_PIC(5);
 		return;
 	}
@@ -1078,6 +1086,7 @@ void Disp_Cmd8_SetI(void)
 	if(gLcdFresh > 2)
 	{
 		gLcdFresh--;
+		LCD_CLR_SCR_BLK();		// 黑色清屏：消除切页残影且不出现蓝色闪烁
 		LCD_Disp_PIC(4);
 		return;
 	}
@@ -1152,6 +1161,7 @@ void Disp_Cmd8_SetI2(void)
 	if(gLcdFresh > 2)
 	{
 		gLcdFresh--;
+		LCD_CLR_SCR_BLK();		// 黑色清屏：消除切页残影且不出现蓝色闪烁
 		LCD_Disp_PIC(4);
 		return;
 	}

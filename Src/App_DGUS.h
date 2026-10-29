@@ -99,8 +99,10 @@ extern long  gLCD_BC ;					// LCD±³¾°É«£¬Ä¬ÈÏ À¶É«
 *****************************************************************************************/
 void LCD_Hands(void);
 void LCD_CLR_SCR(void);
+void LCD_CLR_SCR_BLK(void);
 void LCD_SET_BL(uchar vBL);
 void LCD_Disp_PIC(ushort vPicID);
+void LCD_BK_On_IfWake(void);
 void LCD_Set_Color(long vFC,long vBC);
 void LCD_Set_FontDis(char vDX,char vDY);
 void LCD_Get_Color(uchar vFCBC, ushort vX, ushort vY);

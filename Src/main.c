@@ -194,6 +194,8 @@ int main( void )
 	UARTInit(0, 115200);
 	UARTInit(1, 115200);
 
+	LCD_SET_BL(0);				// 上电先关迪文背光（模块启动后才响应命令，早发会被丢弃，故下面循环里持续发）
+
 #if 1
 	ADCInit( ADC_CLK );
 	CAN_Init( gSysInfo[0].vBps);
@@ -215,9 +217,11 @@ int main( void )
 		delay_ms(100);
 		WDT_Feed();		
 			Arm_Conv();									// 20180506  lsg   5V  
+		LCD_SET_BL(0);			// 持续关背光，尽早熄灭，避免上电显示上次关机残留页
 	}
-	LCD_SET_BL(gLCDBKLight);
-	Disp_PicX(1);// 显示Logo
+	Disp_PicX(1);// 显示Logo（背光已关，用户看不到残留页）
+	delay_ms(30);				// 等待 Logo 真正绘制完成
+	LCD_SET_BL(gLCDBKLight);	// Logo 画完后再开背光
 	for(i=0; i<20; i++)
 	{
 		delay_ms(100);
@@ -238,7 +242,7 @@ int main( void )
 				gPowerChk &= ~0x10000;
 	gWLDly_lp = 1;
 	gLaBaFlg = 0;
-	gLcdFresh = 5;
+	gLcdFresh = 3;		// 开机只整页重绘一次（=3 对应一次黑场清屏+画页）；用 5 会让 >=3 分支连清多次导致开机闪烁
 	if(gPowerChk)
 			gp_lcdtask = Disp_ZZT_CtrlStatus;
 	else
