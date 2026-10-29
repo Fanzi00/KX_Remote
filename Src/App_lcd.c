@@ -201,6 +201,7 @@ void Disp_mainSPJ(void)
 	static unsigned char stLoop = LCD_FRESH_WARN;
 	static unsigned char stWLFlg = 55;
 	static unsigned char stBATFlg = 55;
+	static unsigned char stBatFlush = 0;	// 开机/切页后强制多刷电量、无线图标次数（应对 DGUS 0x71 粘贴偶发丢帧）
 	unsigned char vFlg = 0;
 	static  int stWarnCnt = 0;
 	static  char stCnt = 0;
@@ -240,7 +241,10 @@ void Disp_mainSPJ(void)
 		LCD_BK_On_IfWake();							// 兼容唤醒开背光（主界面已不用图片）
 		stWLFlg = 55;
 		stBATFlg = 55;
+		stBatFlush = 6;		// 强制多刷几次，确保电量/无线图标贴上当前显示页（DGUS 启动 Logo 切用户页存在竞态，0x71 偶发不显示）
 	}											//  moment_percentage
+	if(stBatFlush > 0)
+		gDataFresh = 1;		// 触发本帧重绘块，配合下方强制重绘电量/无线图标（应对偶发丢帧）
 	if((gLcdFresh == 1)||(gDataFresh == 1))
 	{
 		static unsigned char stEnterCnt = 0;
@@ -321,11 +325,13 @@ if (remote_18c.message_8) {	 if (remote_18c.message_6){	LCD_Disp_Txt(FONT_16, 20
 		if(!remote_18c.message_8){	LCD_Disp_Txt(FONT_16, 200, 219, "     ");   	}
 		if (remote_18c.message_7){LCD_Set_Color(COLOR_YELLW_,-1); 	LCD_Disp_Txt(FONT_16, 240, 219, " 自动凿岩 ");   	} else {LCD_Disp_Txt(FONT_16, 240, 219, "         ");  }
 #endif
-		if(vFlg)
+		if(vFlg || stBatFlush > 0)
 		{
- 				 
-		if(gPowerChk)
-		LCD_Set_Color(COLOR_RED_,-1);
+			if(stBatFlush > 0)		// 开机/切页后强制多刷电量、无线图标（应对 DGUS 0x71 粘贴偶发丢帧）
+			{ stWLFlg = 0xFF; stBATFlg = 0xFF; stBatFlush--; }
+				 
+			if(gPowerChk)
+			LCD_Set_Color(COLOR_RED_,-1);
 			if(gPowerChk>>16)									// 20180506   lsg 
 			{
 				LCD_Disp_Txt(FONT_16, 190, 33+24*6, "内部电压异常！");
