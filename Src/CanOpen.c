@@ -969,10 +969,13 @@ void  KX_127_63(unsigned char Y_Send_buf[] ,unsigned char vNO   )	// 0 1
 *			
 * 出口参数：
 ******************************************************************/
-// 锁定手柄只能输出上下移动量或者左右移动量
+// 手柄轴输出策略（由各遥控器 _Device_config.h 的 _ARM_JOY_PRIORITY 配置）：
+//  =1（默认）：优先轴逻辑，把每对(0,1)(2,3)(4,5)(6,7)中动得少的轴强制置中位、只发偏差大的轴
+//              （原行为：禁止合成方向，但"先打满一个方向再打另一个方向"时副轴会从中位阶跃到最大值）。
+//  =0        ：每轴独立直通，各轴经 KX_JoyValue 标定后直接下发（消除阶跃、支持合成动作，见 AGENTS.md §12）。
 void  KX_Send_joylogic(unsigned char Y_Send_buf[] ,unsigned char vNO   )	// 0 1 
 {
-
+#if _ARM_JOY_PRIORITY
 	unsigned char i = 0 , NO_Result=0; char vc = 0 ;
 	float q_y_link = 0.0 ;
 	for(i=0; i<4; i++)
@@ -992,11 +995,9 @@ void  KX_Send_joylogic(unsigned char Y_Send_buf[] ,unsigned char vNO   )	// 0 1
 		else
 		{  
 			if ( abs( Y_Send_buf[vc] - _ARM_MIDVCan ) >0 )// 手柄有上下移动
-
 				 NO_Result = vc ;
 			else
 				 NO_Result = vc+8 ;
-		
 		}
 		
 		if (NO_Result==vc)
@@ -1009,7 +1010,7 @@ void  KX_Send_joylogic(unsigned char Y_Send_buf[] ,unsigned char vNO   )	// 0 1
 		{	 
 			VKC_Send[NO_Result]	= Y_Send_buf[NO_Result] ;
 			VKC_Send[NO_Result-1]	=_ARM_MIDVCan ;
-	
+
 		}
 		if (NO_Result==vc+8)	 
 		{
@@ -1017,10 +1018,14 @@ void  KX_Send_joylogic(unsigned char Y_Send_buf[] ,unsigned char vNO   )	// 0 1
 			VKC_Send[NO_Result-7]	= Y_Send_buf[NO_Result-7] ;
 		}						  
 	}
- 		
-
-	 
-	   
+#else
+	// 每轴独立直通：先经 KX_JoyValue 完成死区/标定换算，这里直接下发，互不压制。
+	unsigned char i = 0;
+	for(i=0; i<vNO; i++)
+	{
+		VKC_Send[i] = Y_Send_buf[i];
+	}
+#endif
 }
 
 /******************************************************************

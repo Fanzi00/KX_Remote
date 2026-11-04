@@ -89,6 +89,8 @@ void Straight_handle(void); // 直线手柄
 #define _XN_LiuL    0 // 是否有流量旋钮
 #define _SELF_CHK_EN  // 自检功能打开（定义即开启，由 #ifdef 控制）
 
+#define _ARM_JOY_PRIORITY 1 // 手柄优先轴输出：1=优先轴(原行为) 0=每轴独立直通
+
 #endif // #if (USER_TYPE == Example)
 
 // 河南耿力 拱架台车 312E
@@ -100,6 +102,8 @@ void Straight_handle(void); // 直线手柄
 #define SWI_ICON_EN 1 // 是否有扭子开关
 #define _XN_LiuL    0 // 是否有流量旋钮
 #define _SELF_CHK_EN  // 自检功能打开（定义即开启，由 #ifdef 控制）
+
+#define _ARM_JOY_PRIORITY 1 // 手柄优先轴输出：1=优先轴(原行为) 0=每轴独立直通
 
 #endif // #if (USER_TYPE == KXCAN_GLGJT312E_L3X)
 
@@ -114,6 +118,8 @@ void Straight_handle(void); // 直线手柄
 #define _XN_LiuL    1 // 是否有流量旋钮
 #define _SELF_CHK_EN  // 自检功能打开（定义即开启，由 #ifdef 控制）
 
+#define _ARM_JOY_PRIORITY 1 // 手柄优先轴输出：1=优先轴(原行为) 0=每轴独立直通
+
 #endif // #if (USER_TYPE == KXCAN_GLZYTC_L2X)
 
 // 中铁强力 立拱架台车 QLG0312A
@@ -126,6 +132,8 @@ void Straight_handle(void); // 直线手柄
 #define _XN_LiuL    0 // 是否有流量旋钮（QLG0312A 无流量旋钮，见协议文档）
 // #define _SELF_CHK_EN  // 自检功能关闭（QLG0312A 无自检功能，见协议文档）
 
+#define _ARM_JOY_PRIORITY 1 // 手柄优先轴输出：1=优先轴(原行为) 0=每轴独立直通
+
 #endif // #if (USER_TYPE == KX119_QLG0312A_L4X)
 
 // 耿力锚注（GMZ12I-X）
@@ -137,6 +145,8 @@ void Straight_handle(void); // 直线手柄
 #define SWI_ICON_EN 1
 #define _XN_LiuL    0 // 是否有流量旋钮（GLMZ 无流量旋钮，见协议文档）
 #define _SELF_CHK_EN  // 自检功能关闭
+
+#define _ARM_JOY_PRIORITY 1 // 手柄优先轴输出：1=优先轴(原行为) 0=每轴独立直通
 
 #endif // #if (USER_TYPE == KX119_GLMZ_L2X3J)
 
@@ -151,11 +161,8 @@ void Straight_handle(void); // 直线手柄
 #define _SELF_CHK_EN  // 自检功能临时关闭（2026-10-26 排查：213 信号 3→2 波动是否由自检引起）。若波动消失→证实自检所致；若仍在→排除自检。排查完请恢复此行。
 
 
-#endif // #if (USER_TYPE == KX119_GLMZ213_L3X)
+#define _ARM_JOY_PRIORITY 0 // 耿力(213)不配优先轴功能：每轴独立直通，消除阶跃、支持合成动作
 
-// 自学习通道选择默认值(上面各设备块未配置时)：全学
-#ifndef _ARM_STUDY_MASK
-#define _ARM_STUDY_MASK 0xFF
-#endif
+#endif // #if (USER_TYPE == KX119_GLMZ213_L3X)
 
 #endif // #ifndef __DEVICE_CONFIG_H
