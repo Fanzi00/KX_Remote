@@ -29,7 +29,7 @@ unsigned int  dead_zone = 0;
 unsigned int  gWLRcvChkFail = 0;	// Ö¡Ğ£ÑéÊ§°Ü¼ÆÊı£¨ÔëÉù/´íÖ¡£¬RF ÎóÂë£©
 unsigned int  gWLRcvHdrMiss = 0;	// »º´æÖĞÕÒ²»µ½ÓĞĞ§Ö¡Í·¼ÆÊı£¨ÔëÉù/µôÏßÊ±¶Ñ»ıµÄÀ¬»ø£©
 
-// Ò¡¸Ë´Ó×ó(J1) µ½ÓÒ(J8)¶ÔÓ¦µÄAD²ÉÑùÖµ´æ´¢Î»ÖÃ
+// gArmUpTab / gArmDownTab µÄÓ³Éä±íÒÑÒÆÖÁ¸÷Éè±¸ .c£¨¼û¸÷ USER_TYPE ¿ØÖÆ¿éÄÚ¶¨Òå£»µ±Ç°È«ÏîÄ¿Í³Ò» KX ±í {10,6,15,7,12,13,0,5}£©¡£App_usr.c ½ö±£Áô extern ÉùÃ÷£¬±ÜÃâÖØ¸´¶¨Òå¡£
 #if _ARM_XY						// ÍòÏòÒ¡¸Ë
 	#if _ARM_PG					// P+G
 		const unsigned char gArmUpTab[_ARM_MAX] = {7,  3,  13, 8, 5, 1, 0, 0 };
@@ -40,8 +40,8 @@ unsigned int  gWLRcvHdrMiss = 0;	// »º´æÖĞÕÒ²»µ½ÓĞĞ§Ö¡Í·¼ÆÊı£¨ÔëÉù/µôÏßÊ±¶Ñ»ıµÄÀ
 			const unsigned char gArmDownTab[_ARM_MAX] ={15, 7, 13, 12, 5, 0,   8, 4 };		// ÍòÏòÊÖ±ú£¬ÏÈÉÏÏÂ ºó×óÓÒ
 		#endif
 		#if	 _ARM_KX	
-			const unsigned char gArmUpTab[_ARM_MAX]  = {10,6 , 15, 7 ,12,13 , 0, 5 };		// ÍòÏòÊÖ±ú£¬ÏÈÉÏÏÂ ºó×óÓÒ
-			const unsigned char gArmDownTab[_ARM_MAX] ={ 10,6, 15, 7,  12,13 ,0, 5  };		// ÍòÏòÊÖ±ú£¬ÏÈÉÏÏÂ ºó×óÓÒ
+			// const unsigned char gArmUpTab[_ARM_MAX]  = {10,6 , 15, 7 ,12,13 , 0, 5 };		// ÍòÏòÊÖ±ú£¬ÏÈÉÏÏÂ ºó×óÓÒ
+			// const unsigned char gArmDownTab[_ARM_MAX] ={ 10,6, 15, 7,  12,13 ,0, 5  };		// ÍòÏòÊÖ±ú£¬ÏÈÉÏÏÂ ºó×óÓÒ
 																														  
 		#else
 			const unsigned char gArmUpTab[_ARM_MAX]  = {15, 7, 12, 13, 0, 5 ,  8, 4};		// ÍòÏòÊÖ±ú£¬ÏÈÉÏÏÂ ºó×óÓÒ

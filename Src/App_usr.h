@@ -160,8 +160,8 @@ extern mPswd  gPswd;
 extern mRunInfo gRunInfo;
 extern unsigned char gADArmConV[_ARM_MAX+1];		// 摇杆转换后的值(0~124,125,126~250)
 extern unsigned char gADArmSend[_ARM_MAX+1];		// 摇杆的输出值（0~124,125,126~250
-extern const unsigned char gArmUpTab[_ARM_MAX];
-extern const unsigned char gArmDownTab[_ARM_MAX];
+// extern const uint8_t gArmUpTab[_ARM_MAX];
+// extern const uint8_t gArmDownTab[_ARM_MAX];
 extern ushort gArmMidSp[_ARM_MAX*2];
 
 

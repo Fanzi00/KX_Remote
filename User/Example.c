@@ -3,6 +3,10 @@
 
 #if (USER_TYPE == Example)
 
+// 摇杆 AD 通道映射表（每个机型在此自定；当前全项目统一 KX 表 {10,6,15,7,12,13,0,5}）
+const uint8_t gArmUpTab[_ARM_MAX]   = {10, 6, 15, 7, 12, 13, 0, 5 };
+const uint8_t gArmDownTab[_ARM_MAX] = {10, 6, 15, 7, 12, 13, 0, 5 };
+
 Activar_t F = {0};
 // 扭子开关图标配置表（App_lcd.c 的 Disp_SwiIconRow 遍历绘制）
 // 行格式: {是否显示, 屏幕X, 屏幕Y, gDIBitV移位数, 几档开关(2/3), 是否自锁(0/1), 显示映射(0/1)}

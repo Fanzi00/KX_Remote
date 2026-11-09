@@ -2,6 +2,10 @@
 #include "App_usr.h"
 #if (USER_TYPE == KX119_GLMZ_L2X3J)
 
+// 摇杆 AD 通道映射表（每个机型在此自定；当前全项目统一 KX 表 {10,6,15,7,12,13,0,5}）
+const uint8_t gArmUpTab[_ARM_MAX]   = {10, 6, 15, 7, 12, 13, 0, 5 };
+const uint8_t gArmDownTab[_ARM_MAX] = {10, 6, 15, 7, 12, 13, 0, 5 };
+
 // @ref ZZZ_project_data/KX119-GLMZ-L2X3J.md （协议 + 测试均已完成）
 // gDIBitV 位号推导：0x18A 无线帧 = gDIBitV 的 4 字节(bit = B*8 + C，数字/模拟/手柄顶钮都在这 32 位里)
 //   数字开关由 DI 扫描 gDIBitV0 |=(1<<i) 直接得到；模拟量/手柄顶钮开关经 App_IO.c 通用映射 或 本文件 DI_Correction 映射。

@@ -43,6 +43,8 @@ typedef struct {
 extern const SwiIconCfg_t gSwiIconTab1[];
 extern const SwiIconCfg_t gSwiIconTab2[];
 extern const KnobValCfg_t gKnobValTab[];
+extern const uint8_t gArmUpTab[_ARM_MAX];
+extern const uint8_t gArmDownTab[_ARM_MAX];
 
 void WL_Recv(unsigned char vGrp, const unsigned char* buf);
 uint8_t showWarn(uint32_t t);

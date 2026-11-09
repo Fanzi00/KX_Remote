@@ -2,6 +2,10 @@
 #include "App_usr.h"
 #if (USER_TYPE == KXCAN_GLZYTC_L2X)
 
+// 摇杆 AD 通道映射表（每个机型在此自定；当前全项目统一 KX 表 {10,6,15,7,12,13,0,5}）
+const uint8_t gArmUpTab[_ARM_MAX]   = {10, 6, 15, 7, 12, 13, 0, 5 };
+const uint8_t gArmDownTab[_ARM_MAX] = {10, 6, 15, 7, 12, 13, 0, 5 };
+
 
 Activar_t F = {0};
 
